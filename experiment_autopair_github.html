@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>视觉实验 - GitHub 自动图片配对</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+    }
+    #image {
+      width: 600px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      cursor: crosshair;
+    }
+    #message {
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+    #progress {
+      color: #666;
+      margin-bottom: 10px;
+    }
+    #download-btn {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>欢迎参加实验</h1>
+  <p>按下空格键开始</p>
+
+  <div id="experiment" style="display: none;">
+    <div id="progress"></div>
+    <div id="message">准备中...</div>
+    <img id="image" src="" alt="diff" />
+  </div>
+
+  <div id="end" style="display: none; color: green; font-size: 1.4em;">
+    ✅ 实验完成，数据已上传 Google Sheets。<br>
+    <button id="download-btn">下载本地副本 JSON</button>
+  </div>
+
+  <script>
+    const SHEET_URL = "https://script.google.com/macros/s/AKfycbyZ0Is8DZaK2v1j4NDnhfItZpa1GmmHmcXRFIhGF2aWUSU446ZSI9NGDAnMp6eaDLOm/exec";
+    const userId = 'user_' + Math.random().toString(36).substr(2, 8);
+    const experimentId = 'exp_' + new Date().toISOString().slice(0,10).replace(/-/g, '') + '_' + Math.random().toString(36).substr(2, 7);
+
+    let imagePairs = [];
+    let currentPair = 0;
+    let imageStartTime = 0;
+    const results = [];
+
+    const image = document.getElementById('image');
+    const message = document.getElementById('message');
+    const progress = document.getElementById('progress');
+    const experiment = document.getElementById('experiment');
+    const end = document.getElementById('end');
+    const downloadBtn = document.getElementById('download-btn');
+
+    document.addEventListener('keydown', async (e) => {
+      if (e.code === 'Space' && imagePairs.length === 0) {
+        await fetchAndPairImages();
+        experiment.style.display = 'block';
+        document.querySelector('p').style.display = 'none';
+        runNextPair();
+      }
+    });
+
+    async function fetchAndPairImages() {
+      const response = await fetch('.');
+      const text = await response.text();
+      const matches = [...text.matchAll(/href="(.*?\.(jpg|jpeg|png|gif|webp|bmp))"/gi)];
+      const files = matches.map(m => m[1]).filter(name => name !== '').sort();
+      const usable = files.length % 2 === 0 ? files : files.slice(0, -1);
+      for (let i = 0; i < usable.length; i += 2) {
+        imagePairs.push([usable[i], usable[i + 1]]);
+      }
+    }
+
+    function runNextPair() {
+      if (currentPair >= imagePairs.length) {
+        finish();
+        return;
+      }
+      const [imgA, imgB] = imagePairs[currentPair];
+      progress.textContent = `第 ${currentPair + 1} / ${imagePairs.length} 对图像`;
+      message.textContent = `请观察...`;
+      image.src = imgA;
+      setTimeout(() => {
+        image.src = imgB;
+        message.textContent = '请点击你看到变化的位置';
+        imageStartTime = performance.now();
+        image.onclick = handleClick;
+      }, 1000);
+    }
+
+    function handleClick(e) {
+      const rect = image.getBoundingClientRect();
+      const x = Math.round(e.clientX - rect.left);
+      const y = Math.round(e.clientY - rect.top);
+      const elapsed = Math.round(performance.now() - imageStartTime);
+      const [imgA, imgB] = imagePairs[currentPair];
+      const now = new Date();
+      const timestamp = now.getFullYear() + "-" +
+                        String(now.getMonth()+1).padStart(2, '0') + "-" +
+                        String(now.getDate()).padStart(2, '0') + " " +
+                        String(now.getHours()).padStart(2, '0') + ":" +
+                        String(now.getMinutes()).padStart(2, '0') + ":" +
+                        String(now.getSeconds()).padStart(2, '0');
+
+      results.push({
+        userId,
+        experimentId,
+        timestamp,
+        pairIndex: currentPair,
+        clickedX: x,
+        clickedY: y,
+        timeMs: elapsed,
+        imageA: imgA,
+        imageB: imgB
+      });
+
+      image.onclick = null;
+      currentPair++;
+      setTimeout(runNextPair, 500);
+    }
+
+    function finish() {
+      experiment.style.display = 'none';
+      end.style.display = 'block';
+      sendToGoogleSheets();
+      downloadBtn.style.display = 'inline-block';
+    }
+
+    function sendToGoogleSheets() {
+      fetch(SHEET_URL, {
+        method: "POST",
+        body: JSON.stringify(results)
+      }).then(res => {
+        console.log("✅ 数据已上传 Google Sheets");
+      }).catch(err => {
+        console.error("❌ 上传失败", err);
+        alert("数据上传失败，请联系管理员");
+      });
+    }
+
+    downloadBtn.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const now = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `result_${experimentId}_${now}.json`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
