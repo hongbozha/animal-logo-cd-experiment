@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>图像实验 - 自动读取 + 上传命名</title>
+  <title>图像实验 - 自动上传与记录</title>
   <style>
     body {
       font-family: sans-serif;
@@ -27,7 +27,7 @@
   </style>
 </head>
 <body>
-  <h1>实验：图像标注与上传</h1>
+  <h1>实验：图像点击与上传</h1>
   <p id="status-msg">正在加载图片资源，请稍候...</p>
   <div id="loading">🔄 加载中：<span id="progress">0%</span></div>
 
@@ -152,9 +152,19 @@
       const pairIndex = current + 1;
       const fileName = `${userId}_pair${pairIndex}_${timestamp}.png`;
 
+      const payload = {
+        imageData,
+        fileName,
+        userId,
+        pairIndex,
+        clickedX: x,
+        clickedY: y,
+        timeMs: elapsed
+      };
+
       fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
         method: "POST",
-        body: JSON.stringify({ imageData, fileName })
+        body: JSON.stringify(payload)
       }).catch((err) => {
         console.warn("上传失败（静默处理）", err);
       });
