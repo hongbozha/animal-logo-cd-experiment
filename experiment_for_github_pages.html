@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>图像实验 - 自动读取 + 预加载 + 上传</title>
+  <title>图像实验 - 自动读取 + 上传命名</title>
   <style>
     body {
       font-family: sans-serif;
@@ -41,6 +41,7 @@
   </div>
 
   <script>
+    const userId = "user_" + Math.random().toString(36).substr(2, 8);
     let imagePairs = [];
     let allPreloadedImages = [];
     let imagesReady = false;
@@ -124,6 +125,10 @@
               startTime = performance.now();
               canvas.onclick = recordClick;
             };
+            currentImg.onerror = () => {
+              msg.innerText = "❌ 图片加载失败，请检查图片路径。";
+              console.error("图片加载失败：", imgB);
+            };
             currentImg.src = imgB;
           }, 200);
         }, 1000);
@@ -143,9 +148,13 @@
       ctx.fill();
 
       const imageData = canvas.toDataURL("image/png");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const pairIndex = current + 1;
+      const fileName = `${userId}_pair${pairIndex}_${timestamp}.png`;
+
       fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
         method: "POST",
-        body: JSON.stringify({ imageData })
+        body: JSON.stringify({ imageData, fileName })
       }).catch((err) => {
         console.warn("上传失败（静默处理）", err);
       });
