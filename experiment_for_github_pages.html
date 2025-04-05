@@ -2,96 +2,53 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>图像实验 - 上传到 Google Drive</title>
+  <title>实验：上传标注图到 Drive（仅作者可见）</title>
+  <style>
+    body {{
+      font-family: sans-serif;
+      padding: 20px;
+    }}
+    canvas {{
+      border: 2px solid #333;
+      display: block;
+      margin-top: 20px;
+      cursor: crosshair;
+    }}
+    #end-screen {{
+      color: green;
+      font-size: 20px;
+      margin-top: 20px;
+    }}
+  </style>
 </head>
 <body>
   <h1>实验：上传标注图到 Drive（仅作者可见）</h1>
-  <p>按下空格键开始</p>
+  <p>按空格开始</p>
 
   <div id="experiment" style="display:none;">
     <canvas id="canvas" width="600"></canvas>
     <p id="msg">加载中...</p>
   </div>
 
-  <div id="end-screen" style="display:none; color:green;">
-    ✅ 实验结束，图像已上传 Google Drive！
+  <div id="end-screen" style="display:none;">
+    ✅ 实验完成，感谢参与！
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
-<script>
-  // ✅ Firebase 初始化
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const storage = firebase.storage();
-
-  // 🚀 自动从 Firebase Storage 获取图片
-  let imagePairs = [
-  [
-    "https://images.pexels.com/photos/18790037/pexels-photo-18790037/free-photo-of-deer-looking-at-camera.jpeg?auto=compress&cs=tinysrgb&w=1200&lazy=load",
-    "https://images.pexels.com/photos/4482677/pexels-photo-4482677.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-  ],
-  [
-    "https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-  ]
-];
-
-  async function fetchImagePairsFromFirebase() {
-    const listRef = storage.ref().child("images"); // 放在 Firebase /images 文件夹下
-    const result = await listRef.listAll();
-    const urls = await Promise.all(result.items.map(item => item.getDownloadURL()));
-    urls.sort(); // 按文件名排序（可选）
-
-    for (let i = 0; i < urls.length - 1; i += 2) {
-      imagePairs.push([urls[i], urls[i + 1]]);
-    }
-  }
-
-  // 等待加载完毕再开始实验流程
-  document.addEventListener('keydown', async function(e) {
-    if (e.code === 'Space') {
-      document.querySelector('p').style.display = 'none';
-      document.getElementById('experiment').style.display = 'block';
-
-      await fetchImagePairsFromFirebase();
-      nextImage(); // 原本开始实验的入口
-    }
-  });
-</script>
-<script>
-    
-// 🚀 从 Firebase 加载图片列表并生成 imagePairs
-let imagePairs = [
-  [
-    "https://images.pexels.com/photos/18790037/pexels-photo-18790037/free-photo-of-deer-looking-at-camera.jpeg?auto=compress&cs=tinysrgb&w=1200&lazy=load",
-    "https://images.pexels.com/photos/4482677/pexels-photo-4482677.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-  ],
-  [
-    "https://images.pexels.com/photos/20787/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-  ]
-];
-const firebaseImages = [
-  // 这些地址是 Firebase Storage 公开图像链接，2n 张自动两两成对
-  "https://firebasestorage.googleapis.com/v0/b/your-app-id.appspot.com/o/image1.jpg?alt=media",
-  "https://firebasestorage.googleapis.com/v0/b/your-app-id.appspot.com/o/image2.jpg?alt=media",
-  "https://firebasestorage.googleapis.com/v0/b/your-app-id.appspot.com/o/image3.jpg?alt=media",
-  "https://firebasestorage.googleapis.com/v0/b/your-app-id.appspot.com/o/image4.jpg?alt=media"
-];
-
-// 两两成对
-for (let i = 0; i < firebaseImages.length - 1; i += 2) {
-  imagePairs.push([firebaseImages[i], firebaseImages[i + 1]]);
-}
-
+  <script>
+    let imagePairs = [
+      [
+        "https://drive.google.com/uc?export=view&id=1AtpCdypq3UafZuwN7zocrNb751LXBerl",
+        "https://drive.google.com/uc?export=view&id=1hbBD0mVlYI3xt1nlGbA88KdKU1i2El0r"
+      ],
+      [
+        "https://drive.google.com/uc?export=view&id=1-4yPGVM8BSuugs_ebM_Y4cGlUzwttXk7",
+        "https://drive.google.com/uc?export=view&id=1Lu94xTQgCaLHnAccBscDgCqdCAeW6-06"
+      ],
+      [
+        "https://drive.google.com/uc?export=view&id=1lyrO9-cLproCgIvHiis3g-1h4qsIasML",
+        "https://drive.google.com/uc?export=view&id=11D5FbeO12FpAiM3ul3dK54K_JP2ExXZQ"
+      ]
+    ];
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -101,77 +58,72 @@ for (let i = 0; i < firebaseImages.length - 1; i += 2) {
     let currentImg = new Image();
     let startTime = 0;
 
-    document.addEventListener('keydown', function(e) {
-      if (e.code === 'Space') {
+    document.addEventListener('keydown', function(e) {{
+      if (e.code === 'Space') {{
         document.querySelector('p').style.display = 'none';
         document.getElementById('experiment').style.display = 'block';
         nextImage();
-      }
-    });
+      }}
+    }});
 
-    function nextImage() {
-      if (current >= imagePairs.length) {
+    function nextImage() {{
+      if (current >= imagePairs.length) {{
         document.getElementById('experiment').style.display = 'none';
         endScreen.style.display = 'block';
         return;
-      }
+      }}
 
       const [imgA, imgB] = imagePairs[current];
       currentImg = new Image();
       currentImg.crossOrigin = "anonymous";
-      currentImg.onload = () => {
+      currentImg.onload = () => {{
         canvas.width = currentImg.width;
         canvas.height = currentImg.height;
         ctx.drawImage(currentImg, 0, 0);
-        msg.innerText = `第 ${current + 1} 对图 - 第一张`;
+        msg.innerText = `第 ${{current + 1}} 对图 - 第一张`;
 
-        setTimeout(() => {
+        setTimeout(() => {{
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           msg.innerText = "切换中...";
-          setTimeout(() => {
+          setTimeout(() => {{
             currentImg = new Image();
             currentImg.crossOrigin = "anonymous";
-            currentImg.onload = () => {
+            currentImg.onload = () => {{
               ctx.drawImage(currentImg, 0, 0);
               msg.innerText = "点击你看到变化的区域";
               startTime = performance.now();
               canvas.onclick = recordClick;
-            };
+            }};
             currentImg.src = imgB;
-          }, 200);
-        }, 1000);
-      };
+          }}, 200);
+        }}, 1000);
+      }};
       currentImg.src = imgA;
-    }
+    }}
 
-    function recordClick(e) {
+    function recordClick(e) {{
       const rect = canvas.getBoundingClientRect();
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
       const elapsed = Math.round(performance.now() - startTime);
 
-      // 标记点击位置
       ctx.fillStyle = "red";
       ctx.beginPath();
       ctx.arc(x, y, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      // 上传图像到 Apps Script
       const imageData = canvas.toDataURL("image/png");
-      fetch("https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec", {
+      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {{
         method: "POST",
-        body: JSON.stringify({ imageData })
-      }).then(() => {
-        console.log("✅ 图片上传成功");
-      }).catch((err) => {
-        console.error("❌ 上传失败", err);
-        alert("上传失败");
-      });
+        body: JSON.stringify({{ imageData }})
+      }}).catch((err) => {{
+        console.warn("上传失败（静默处理）", err);
+      }});
 
       canvas.onclick = null;
       current++;
       setTimeout(nextImage, 500);
-    }
+    }}
   </script>
 </body>
 </html>
