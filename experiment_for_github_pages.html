@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>图像实验 - 自动上传与记录</title>
+  <title>图像实验：标注并上传</title>
   <style>
     body {
       font-family: sans-serif;
@@ -27,7 +27,7 @@
   </style>
 </head>
 <body>
-  <h1>实验：图像点击与上传</h1>
+  <h1>实验：点击识别图像差异</h1>
   <p id="status-msg">正在加载图片资源，请稍候...</p>
   <div id="loading">🔄 加载中：<span id="progress">0%</span></div>
 
@@ -156,10 +156,14 @@
         imageData,
         fileName,
         userId,
+        experimentId: pairIndex,
         pairIndex,
+        timestamp: new Date().toLocaleString(),
         clickedX: x,
         clickedY: y,
-        timeMs: elapsed
+        timeMs: elapsed,
+        imageA: imagePairs[current][0],
+        imageB: imagePairs[current][1]
       };
 
       fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
