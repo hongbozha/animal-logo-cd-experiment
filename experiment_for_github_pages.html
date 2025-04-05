@@ -2,32 +2,38 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>实验：动态读取图片并上传标注图</title>
+  <title>图像实验 - 自动读取 + 预加载 + 上传</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 20px;
+      text-align: center;
+      padding: 30px;
     }
     canvas {
       border: 2px solid #333;
-      display: block;
       margin-top: 20px;
       cursor: crosshair;
     }
+    #loading {
+      font-size: 20px;
+      color: #555;
+      margin-top: 40px;
+    }
     #end-screen {
       color: green;
-      font-size: 20px;
-      margin-top: 20px;
+      font-size: 22px;
+      margin-top: 30px;
     }
   </style>
 </head>
 <body>
-  <h1>实验：动态读取图片并上传标注图</h1>
-  <p>按空格开始</p>
+  <h1>实验：图像标注与上传</h1>
+  <p id="status-msg">正在加载图片资源，请稍候...</p>
+  <div id="loading">🔄 加载中：<span id="progress">0%</span></div>
 
   <div id="experiment" style="display:none;">
     <canvas id="canvas" width="600"></canvas>
-    <p id="msg">加载中...</p>
+    <p id="msg">准备中...</p>
   </div>
 
   <div id="end-screen" style="display:none;">
@@ -36,35 +42,61 @@
 
   <script>
     let imagePairs = [];
-
-    fetch("img/image_list.json")
-      .then(res => res.json())
-      .then(files => {
-        files.sort();
-        for (let i = 0; i < files.length - 1; i += 2) {
-          imagePairs.push(["img/" + files[i], "img/" + files[i + 1]]);
-        }
-
-        document.addEventListener('keydown', function handleStart(e) {
-          if (e.code === 'Space') {
-            document.removeEventListener('keydown', handleStart);
-            document.querySelector('p').style.display = 'none';
-            document.getElementById('experiment').style.display = 'block';
-            nextImage();
-          }
-        });
-      })
-      .catch(err => {
-        console.error("读取 image_list.json 失败", err);
-      });
-
+    let allPreloadedImages = [];
+    let imagesReady = false;
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const msg = document.getElementById('msg');
     const endScreen = document.getElementById('end-screen');
+    const loadingEl = document.getElementById('loading');
+    const statusEl = document.getElementById('status-msg');
+    const progressEl = document.getElementById('progress');
     let current = 0;
     let currentImg = new Image();
     let startTime = 0;
+
+    async function preloadImages() {
+      const res = await fetch("img/image_list.json");
+      const files = await res.json();
+      files.sort();
+
+      for (let i = 0; i < files.length - 1; i += 2) {
+        imagePairs.push(["img/" + files[i], "img/" + files[i + 1]]);
+      }
+
+      let loaded = 0;
+      const total = files.length;
+
+      const preloadPromises = files.map(filename => {
+        return new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => {
+            loaded++;
+            progressEl.textContent = Math.round((loaded / total) * 100) + "%";
+            resolve();
+          };
+          img.onerror = resolve;
+          img.src = "img/" + filename;
+          allPreloadedImages.push(img);
+        });
+      });
+
+      await Promise.all(preloadPromises);
+      imagesReady = true;
+      loadingEl.style.display = "none";
+      statusEl.textContent = "图片加载完成，按空格开始";
+    }
+
+    preloadImages();
+
+    document.addEventListener('keydown', function handleStart(e) {
+      if (e.code === 'Space' && imagesReady) {
+        document.removeEventListener('keydown', handleStart);
+        statusEl.style.display = 'none';
+        document.getElementById('experiment').style.display = 'block';
+        nextImage();
+      }
+    });
 
     function nextImage() {
       if (current >= imagePairs.length) {
