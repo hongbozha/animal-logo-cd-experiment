@@ -2,27 +2,27 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>实验：上传标注图到 Drive（仅作者可见）</title>
+  <title>实验：动态读取图片并上传标注图</title>
   <style>
-    body {{
+    body {
       font-family: sans-serif;
       padding: 20px;
-    }}
-    canvas {{
+    }
+    canvas {
       border: 2px solid #333;
       display: block;
       margin-top: 20px;
       cursor: crosshair;
-    }}
-    #end-screen {{
+    }
+    #end-screen {
       color: green;
       font-size: 20px;
       margin-top: 20px;
-    }}
+    }
   </style>
 </head>
 <body>
-  <h1>实验：上传标注图到 Drive（仅作者可见）</h1>
+  <h1>实验：动态读取图片并上传标注图</h1>
   <p>按空格开始</p>
 
   <div id="experiment" style="display:none;">
@@ -35,20 +35,28 @@
   </div>
 
   <script>
-    let imagePairs = [
-      [
-        "https://drive.google.com/uc?export=view&id=1AtpCdypq3UafZuwN7zocrNb751LXBerl",
-        "https://drive.google.com/uc?export=view&id=1hbBD0mVlYI3xt1nlGbA88KdKU1i2El0r"
-      ],
-      [
-        "https://drive.google.com/uc?export=view&id=1-4yPGVM8BSuugs_ebM_Y4cGlUzwttXk7",
-        "https://drive.google.com/uc?export=view&id=1Lu94xTQgCaLHnAccBscDgCqdCAeW6-06"
-      ],
-      [
-        "https://drive.google.com/uc?export=view&id=1lyrO9-cLproCgIvHiis3g-1h4qsIasML",
-        "https://drive.google.com/uc?export=view&id=11D5FbeO12FpAiM3ul3dK54K_JP2ExXZQ"
-      ]
-    ];
+    let imagePairs = [];
+
+    fetch("img/image_list.json")
+      .then(res => res.json())
+      .then(files => {
+        files.sort();
+        for (let i = 0; i < files.length - 1; i += 2) {
+          imagePairs.push(["img/" + files[i], "img/" + files[i + 1]]);
+        }
+
+        document.addEventListener('keydown', function handleStart(e) {
+          if (e.code === 'Space') {
+            document.removeEventListener('keydown', handleStart);
+            document.querySelector('p').style.display = 'none';
+            document.getElementById('experiment').style.display = 'block';
+            nextImage();
+          }
+        });
+      })
+      .catch(err => {
+        console.error("读取 image_list.json 失败", err);
+      });
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -58,50 +66,40 @@
     let currentImg = new Image();
     let startTime = 0;
 
-    document.addEventListener('keydown', function(e) {{
-      if (e.code === 'Space') {{
-        document.querySelector('p').style.display = 'none';
-        document.getElementById('experiment').style.display = 'block';
-        nextImage();
-      }}
-    }});
-
-    function nextImage() {{
-      if (current >= imagePairs.length) {{
+    function nextImage() {
+      if (current >= imagePairs.length) {
         document.getElementById('experiment').style.display = 'none';
         endScreen.style.display = 'block';
         return;
-      }}
+      }
 
       const [imgA, imgB] = imagePairs[current];
       currentImg = new Image();
-      currentImg.crossOrigin = "anonymous";
-      currentImg.onload = () => {{
+      currentImg.onload = () => {
         canvas.width = currentImg.width;
         canvas.height = currentImg.height;
         ctx.drawImage(currentImg, 0, 0);
-        msg.innerText = `第 ${{current + 1}} 对图 - 第一张`;
+        msg.innerText = `第 ${current + 1} 对图 - 第一张`;
 
-        setTimeout(() => {{
+        setTimeout(() => {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           msg.innerText = "切换中...";
-          setTimeout(() => {{
+          setTimeout(() => {
             currentImg = new Image();
-            currentImg.crossOrigin = "anonymous";
-            currentImg.onload = () => {{
+            currentImg.onload = () => {
               ctx.drawImage(currentImg, 0, 0);
               msg.innerText = "点击你看到变化的区域";
               startTime = performance.now();
               canvas.onclick = recordClick;
-            }};
+            };
             currentImg.src = imgB;
-          }}, 200);
-        }}, 1000);
-      }};
+          }, 200);
+        }, 1000);
+      };
       currentImg.src = imgA;
-    }}
+    }
 
-    function recordClick(e) {{
+    function recordClick(e) {
       const rect = canvas.getBoundingClientRect();
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
@@ -113,17 +111,17 @@
       ctx.fill();
 
       const imageData = canvas.toDataURL("image/png");
-      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {{
+      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
         method: "POST",
-        body: JSON.stringify({{ imageData }})
-      }}).catch((err) => {{
+        body: JSON.stringify({ imageData })
+      }).catch((err) => {
         console.warn("上传失败（静默处理）", err);
-      }});
+      });
 
       canvas.onclick = null;
       current++;
       setTimeout(nextImage, 500);
-    }}
+    }
   </script>
 </body>
 </html>
