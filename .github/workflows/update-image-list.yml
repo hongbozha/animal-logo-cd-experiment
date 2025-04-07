@@ -1,3 +1,4 @@
+
 name: Update image_list1.json
 
 on:
@@ -19,7 +20,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Generate image_list.json (sorted by filename)
+      - name: Generate image_list1.json (sorted by filename)
         run: |
           echo "🔍 读取 img/ 下所有图片..."
           node -e "
@@ -33,10 +34,11 @@ jobs:
             fs.writeFileSync(path.join(dir, 'image_list.json'), JSON.stringify(files, null, 2));
           "
 
-      - name: Commit and push updated image_list.json
+      - name: Commit and push updated image_list1.json
         run: |
           git config user.name github-actions
           git config user.email actions@github.com
           git add img/image_list.json
           git commit -m "🤖 Auto update image_list.json" || echo "✅ 无需提交"
           git push
+'''
