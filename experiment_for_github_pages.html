@@ -85,14 +85,16 @@
       await Promise.all(preloadPromises);
       imagesReady = true;
       loadingEl.style.display = "none";
-      statusEl.textContent = "图片加载完成，按空格开始";
+      statusEl.textContent = "图片加载完成，点击任意位置开始";
+      statusEl.style.cursor = "pointer"; // 添加鼠标指针样式，提示用户可以点击
     }
 
     preloadImages();
 
-    document.addEventListener('keydown', function handleStart(e) {
-      if (e.code === 'Space' && imagesReady) {
-        document.removeEventListener('keydown', handleStart);
+    // 修改为点击任意位置开始实验
+    document.addEventListener('click', function handleClick(e) {
+      if (imagesReady) {
+        document.removeEventListener('click', handleClick);
         statusEl.style.display = 'none';
         document.getElementById('experiment').style.display = 'block';
         nextImage();
@@ -109,9 +111,21 @@
       const [imgA, imgB] = imagePairs[current];
       currentImg = new Image();
       currentImg.onload = () => {
-        canvas.width = currentImg.width;
-        canvas.height = currentImg.height;
-        ctx.drawImage(currentImg, 0, 0);
+        // 获取原始图片的宽高
+        const originalWidth = currentImg.width;
+        const originalHeight = currentImg.height;
+
+        // 设置统一的高度
+        const unifiedHeight = 1000;
+        const scale = unifiedHeight / originalHeight;
+        const unifiedWidth = originalWidth * scale;
+
+        // 调整画布大小
+        canvas.width = unifiedWidth;
+        canvas.height = unifiedHeight;
+
+        // 绘制图片
+        ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
         msg.innerText = `第 ${current + 1} 对图 - 第一张`;
 
         setTimeout(() => {
@@ -120,7 +134,7 @@
           setTimeout(() => {
             currentImg = new Image();
             currentImg.onload = () => {
-              ctx.drawImage(currentImg, 0, 0);
+              ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
               msg.innerText = "点击你看到变化的区域";
               startTime = performance.now();
               canvas.onclick = recordClick;
