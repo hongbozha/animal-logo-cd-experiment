@@ -18,13 +18,15 @@ jobs:
 
       - name: Generate image_list.json
         run: |
+          echo "🔍 扫描 img/ 目录下图片..."
           node -e "
             const fs = require('fs');
             const path = require('path');
             const dir = 'img';
             const files = fs.readdirSync(dir)
-              .filter(f => /\.(jpg|jpeg|png)$/i.test(f))
+              .filter(f => /\.(jpe?g|png)$/i.test(f))
               .sort();
+            console.log('✅ 文件列表:', files);
             fs.writeFileSync(path.join(dir, 'image_list.json'), JSON.stringify(files, null, 2));
           "
 
@@ -33,5 +35,5 @@ jobs:
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@github.com'
           git add img/image_list.json
-          git commit -m "🤖 Auto update image_list.json"
-          git push
+          git commit -m "🤖 Auto update image_list.json" || echo "Nothing to commit"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
