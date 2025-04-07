@@ -1,4 +1,4 @@
-name: Update image_list.json
+name: Update image_list1.json
 
 on:
   push:
