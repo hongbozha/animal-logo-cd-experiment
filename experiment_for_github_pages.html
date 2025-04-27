@@ -81,15 +81,17 @@
      
         // 找出无后缀的图像（名字最短的）
         let baseImage = group.reduce((shortest, current) => {
-          return current.split('_').length < shortest.split('_').length ? current : shortest;
+          return current.length < shortest.length ? current : shortest;
         }, group[0]); // 提供一个默认值以防万一
      
         // 从剩余的有后缀的图像中随机选取一个
         const otherImages = group.filter(filename => filename !== baseImage);
-        const randomImage = otherImages[Math.floor(Math.random() * otherImages.length)];
+        if (otherImages.length > 0) { // 确保有对比图像
+          const randomImage = otherImages[Math.floor(Math.random() * otherImages.length)];
      
-        // 将选取的图像对添加到图像对数组中
-        imagePairs.push(["img/" + baseImage, "img/" + randomImage]);
+          // 将选取的图像对添加到图像对数组中
+          imagePairs.push(["img/" + baseImage, "img/" + randomImage]);
+        }
       }
      
       // 输出图像对数组（在实际应用中，你可能会将其用于后续的处理或显示）
