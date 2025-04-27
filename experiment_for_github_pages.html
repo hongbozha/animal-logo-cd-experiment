@@ -59,9 +59,6 @@
     async function preloadImages() {
       const res = await fetch("img/image_list.json");
       const files = await res.json();
-
-      // 用于存储图像对的数组
-      const imagePairs = [];
      
       // 使用一个对象来存储具有相同前缀的图像组
       const imageGroups = {};
