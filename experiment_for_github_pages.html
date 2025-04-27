@@ -59,15 +59,36 @@
     async function preloadImages() {
       const res = await fetch("img/image_list.json");
       const files = await res.json();
-      files.sort();
-
-      for (let i = 0; i < files.length - 1; i += 2) {
-        imagePairs.push(["img/" + files[i], "img/" + files[i + 1]]);
-      }
-
+      const groups = {};
+    
+      // 1. 按前缀分组
+      files.forEach(filename => {
+        const baseName = filename.split('_')[0]; // 获取前缀
+        if (!groups[baseName]) {
+          groups[baseName] = [];
+        }
+        groups[baseName].push(filename);
+      });
+    
+      // 2. 构建图像对
+      imagePairs = [];
+      Object.keys(groups).forEach(baseName => {
+        const group = groups[baseName];
+        
+        // 找到无后缀的图像
+        const noSuffixImage = group.find(img => !img.includes('_'));
+        
+        // 找到有后缀的图像，并随机选择一个
+        const withSuffixImages = group.filter(img => img.includes('_'));
+        const randomWithSuffixImage = withSuffixImages[Math.floor(Math.random() * withSuffixImages.length)];
+    
+        // 将无后缀和随机选择的后缀图像组成一对
+        imagePairs.push([`img/${noSuffixImage}`, `img/${randomWithSuffixImage}`]);
+      });
+    
+      // 更新加载进度
       let loaded = 0;
       const total = files.length;
-
       const preloadPromises = files.map(filename => {
         return new Promise(resolve => {
           const img = new Image();
@@ -81,8 +102,10 @@
           allPreloadedImages.push(img);
         });
       });
-
+    
       await Promise.all(preloadPromises);
+    
+      // 图片加载完成，更新界面
       imagesReady = true;
       loadingEl.style.display = "none";
       statusEl.textContent = "图片加载完成，点击任意位置开始";
