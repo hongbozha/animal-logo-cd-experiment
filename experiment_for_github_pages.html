@@ -79,11 +79,16 @@
       for (const prefix in imageGroups) {
         const group = imageGroups[prefix];
      
-        // 找出无后缀的图像（名字最短的）
-        let baseImage = group.reduce((shortest, current) => {
-          return current.length < shortest.length ? current : shortest;
-        }, group[0]); // 提供一个默认值以防万一
-     
+        // ✅ 优先选取不含下划线的文件作为 baseImage
+        let baseImage = group.find(name => !name.includes('_'));
+    
+        // 如果没有无下划线的，选名字最短的作为兜底方案
+        if (!baseImage) {
+          baseImage = group.reduce((shortest, current) => {
+            return current.length < shortest.length ? current : shortest;
+          }, group[0]);
+        }
+         
         // 从剩余的有后缀的图像中随机选取一个
         const otherImages = group.filter(filename => filename !== baseImage);
         if (otherImages.length > 0) { // 确保有对比图像
