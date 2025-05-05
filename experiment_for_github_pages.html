@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>图像实验：标注并上传</title>
+  <title>Start experiment</title>
   <style>
     body {
       font-family: sans-serif;
@@ -27,17 +27,17 @@
   </style>
 </head>
 <body>
-  <h1>实验：点击识别图像差异</h1>
-  <p id="status-msg">正在加载图片资源，请稍候...</p>
-  <div id="loading">🔄 加载中：<span id="progress">0%</span></div>
+  <h1>Click on the changed area</h1>
+  <p id="status-msg">Please wait for the resources to be loaded</p>
+  <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
 
   <div id="experiment" style="display:none;">
     <canvas id="canvas" width="600"></canvas>
-    <p id="msg">准备中...</p>
+    <p id="msg">Preparing ...</p>
   </div>
 
   <div id="end-screen" style="display:none;">
-    ✅ 实验完成，感谢参与！
+    ✅ Experiment completed. Thank you for participation!
   </div>
 
   <script>
@@ -146,7 +146,7 @@
       await Promise.all(preloadPromises);
       imagesReady = true;
       loadingEl.style.display = "none";
-      statusEl.textContent = "图片加载完成，点击任意位置开始";
+      statusEl.textContent = "Loading finished. Please click anywhere to start.";
       statusEl.style.cursor = "pointer";
     }
 
@@ -188,22 +188,22 @@
 
         // 绘制图片
         ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-        msg.innerText = `第 ${current + 1} 对图 - 第一张`;
+        msg.innerText = `${current + 1}/15;
 
         setTimeout(() => {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          msg.innerText = "切换中...";
+          msg.innerText = "Loading...";
           setTimeout(() => {
             currentImg = new Image();
             currentImg.onload = () => {
               ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-              msg.innerText = "点击你看到变化的区域";
+              msg.innerText = "Click on the area that changed";
               startTime = performance.now();
               canvas.onclick = recordClick;
             };
             currentImg.onerror = () => {
-              msg.innerText = "❌ 图片加载失败，请检查图片路径。";
-              console.error("图片加载失败：", imgB);
+              msg.innerText = "❌ Loading failed";
+              console.error("Loading failed：", imgB);
             };
             currentImg.src = imgB;
           }, 200);
@@ -246,7 +246,7 @@
         method: "POST",
         body: JSON.stringify(payload)
       }).catch((err) => {
-        console.warn("上传失败（静默处理）", err);
+        console.warn("Uploading failed (silent)", err);
       });
 
       canvas.onclick = null;
