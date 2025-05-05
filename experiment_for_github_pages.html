@@ -72,7 +72,12 @@
           if (!groups[prefix]) groups[prefix] = [];
           groups[prefix].push(filename);
         });
-    
+        // ✅ 打印每组的前缀和内容
+        console.log(`===== ${folder} 文件夹中的分组结果 =====`);
+        for (const prefix in groups) {
+          console.log(`组前缀：${prefix}`);
+          console.log(`包含文件：`, groups[prefix]);
+        }
         // 从每组中提取图像对
         const pairs = [];
         for (const prefix in groups) {
