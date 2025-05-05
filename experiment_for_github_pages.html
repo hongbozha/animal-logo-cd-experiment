@@ -68,7 +68,7 @@
         // 按 prefix 分组（例如 a1, a2...）
         const groups = {};
         files.forEach(filename => {
-          const prefix = filename.split('_')[0];
+          const prefix = filename.split('.')[0].split('_')[0];
           if (!groups[prefix]) groups[prefix] = [];
           groups[prefix].push(filename);
         });
