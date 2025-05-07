@@ -27,7 +27,7 @@
   </style>
 </head>
 <body>
-  <h1>Click on the changed area</h1>
+  <h1>Can you spot the change? Click it!</h1>
   <p id="status-msg">Please wait for the resources to be loaded</p>
   <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
 
@@ -202,7 +202,7 @@
             currentImg = new Image();
             currentImg.onload = () => {
               ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-              msg.innerText = "Click on the area that changed";
+              msg.innerText = "Click the changed area";
               startTime = performance.now();
               canvas.onclick = recordClick;
             };
