@@ -210,7 +210,10 @@
               ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
               msg.innerText = "Click the changed area";
               startTime = performance.now();
-              canvas.onclick = recordClick;
+              canvas.onclick = function onceClick(e) {
+                canvas.onclick = null; // 禁止重复点击
+                recordClick(e, unifiedWidth, unifiedHeight); // 带上尺寸参数
+              };
             };
             currentImg.onerror = () => {
               msg.innerText = "❌ Loading failed";
@@ -223,7 +226,9 @@
       currentImg.src = imgA;
     }
 
-    function recordClick(e) {
+    function recordClick(e, drawWidth, drawHeight) {
+      canvas.onclick = null;
+      
       const rect = canvas.getBoundingClientRect();
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
