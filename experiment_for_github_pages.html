@@ -68,7 +68,7 @@
     // 自动记录所有查询参数（不只是 Prolific 的特定参数）
     const participantInfo = {
       referrer: referrer,
-      queryString: JSON.stringify(queryParams) // 把整个 queryParams 对象转为字符串
+      queryParams: JSON.stringify(queryParams) // 把整个 queryParams 对象转为字符串
     };
     
     console.log(participantInfo);  // 可查看提取的所有参数
@@ -279,9 +279,11 @@
         imageB: imagePairs[current][1],
         // 添加参与者元信息
         referrer: participantInfo.referrer,
-        queryParams: participantInfo.queryString
+        queryParams: participantInfo.queryParams
       };
 
+      console.log("Sending payload:", payload);
+      
       fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
         method: "POST",
         body: JSON.stringify(payload)
