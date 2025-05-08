@@ -43,10 +43,36 @@
   </div>
 
   <div id="end-screen" style="display:none;">
-    ✅ Experiment completed. Thank you for participation!
+    ✅ Experiment completed. Thanks for your participation!
   </div>
 
   <script>
+    // 获取 URL 参数
+    function getQueryParams() {
+      const params = {};
+      const queryString = window.location.search.slice(1);
+      const pairs = queryString.split("&");
+      for (const pair of pairs) {
+        const [key, value] = pair.split("=");
+        if (key) {
+          params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+        }
+      }
+      return params;
+    }
+    
+    // 获取所有 URL 参数（包括 Prolific 参数和其他）
+    const queryParams = getQueryParams();
+    const referrer = document.referrer || "direct";
+    
+    // 自动记录所有查询参数（不只是 Prolific 的特定参数）
+    const participantInfo = {
+      referrer: referrer,
+      ...queryParams // 这里将所有 URL 参数加入到 participantInfo 对象中
+    };
+    
+    console.log(participantInfo);  // 可查看提取的所有参数
+    
     const userId = "user_" + Math.random().toString(36).substr(2, 8);
     let imagePairs = [];
     let allPreloadedImages = [];
@@ -250,7 +276,9 @@
         clickedY: y,
         timeMs: elapsed,
         imageA: imagePairs[current][0],
-        imageB: imagePairs[current][1]
+        imageB: imagePairs[current][1],
+        // 添加参与者元信息
+        ...participantInfo
       };
 
       fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
