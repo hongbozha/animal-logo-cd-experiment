@@ -30,99 +30,12 @@
       font-size: 30px;
       margin-top: 30px;
     }
-    /* 新增示例引导样式 */
-    #tutorial {
-      display: none;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .tutorial-page {
-      display: none;
-    }
-    .tutorial-page.active {
-      display: block;
-    }
-    .tutorial-image {
-      max-width: 600px;
-      border: 1px solid #ddd;
-      margin: 20px 0;
-    }
-    .tutorial-text {
-      font-size: 20px;
-      margin-bottom: 30px;
-    }
-    #tutorial-nav {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .nav-button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .dot {
-      height: 15px;
-      width: 15px;
-      margin: 0 2px;
-      background-color: #bbb;
-      border-radius: 50%;
-      display: inline-block;
-      transition: background-color 0.6s ease;
-    }
-    .dot.active {
-      background-color: #4CAF50;
-    }
   </style>
 </head>
 <body>
   <h1>Can you spot the change? Click it!</h1>
   <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
   <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
-
-  <!-- 新增示例引导容器 -->
-  <div id="tutorial">
-    <!-- 示例页面1 -->
-    <div class="tutorial-page active" id="page-1">
-      <div class="tutorial-text">欢迎参加实验！<br>本实验将测试您发现图片中变化的能力。</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="实验介绍">
-    </div>
-    
-    <!-- 示例页面2 -->
-    <div class="tutorial-page" id="page-2">
-      <div class="tutorial-text">实验流程：<br>1. 您将看到一张图片<br>2. 图片会短暂消失<br>3. 然后图片会重新出现，但可能有一处变化<br>4. 请点击您发现的变化位置</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="实验流程">
-    </div>
-    
-    <!-- 示例页面3 -->
-    <div class="tutorial-page" id="page-3">
-      <div class="tutorial-text">例如：<br>注意观察这两张图片的区别</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="示例1">
-    </div>
-    
-    <!-- 示例页面4 -->
-    <div class="tutorial-page" id="page-4">
-      <div class="tutorial-text">变化在这里！<br>当您看到这样的变化时，请点击它。</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
-    </div>
-    
-    <!-- 示例页面5 -->
-    <div class="tutorial-page" id="page-5">
-      <div class="tutorial-text">准备好了吗？<br>点击"开始实验"按钮开始测试您的观察力！</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="准备开始">
-    </div>
-    
-    <!-- 导航按钮 -->
-    <div id="tutorial-nav">
-      <button class="nav-button" id="prev-btn" disabled>上一页</button>
-      <div id="dots"></div>
-      <button class="nav-button" id="next-btn">下一页</button>
-    </div>
-  </div>
 
   <div id="experiment" style="display:none;">
     <canvas id="canvas" width="600"></canvas>
@@ -176,8 +89,8 @@
     let startTime = 0;
 
     async function preloadImages() {
-      //const categories = ["ec", "sm", "st"];
-      const categories = ["st"]; //只开st
+      // const categories = ["ec", "sm", "st"];
+      const categories = ["st"];
       const selectedPairs = [];
     
       // 逐类加载
@@ -219,8 +132,7 @@
           pairs.push([`img_${folder}/${otherImage}`, `img_${folder}/${baseImage}`]);
         }
     
-        // 从该类中随机选出n组
-        //return getRandomItems(pairs, 5);
+        // 从该类中随机选出N组
         return getRandomItems(pairs, 10);
       }
     
@@ -284,8 +196,6 @@
       }
     });
 
-
-    
     function nextImage() {
       if (current >= imagePairs.length) {
         document.getElementById('experiment').style.display = 'none';
@@ -334,7 +244,7 @@
               console.error("Loading failed：", imgB);
             };
             currentImg.src = imgB;
-          }, 1500); // ⬅️ 控制pair中的第一张图和第二张图间隔时长
+          }, 500); // ⬅️ 控制pair中的第一张图和第二张图间隔时长
         }, 1500); // ⬅️ 控制pair中的第一张图显示时长
       };
       currentImg.src = imgA;
