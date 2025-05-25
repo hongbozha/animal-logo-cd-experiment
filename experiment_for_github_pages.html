@@ -94,13 +94,13 @@
     <!-- 示例页面2 -->
     <div class="tutorial-page" id="page-2">
       <div class="tutorial-text">实验流程：<br>1. 您将看到一张图片<br>2. 图片会短暂消失<br>3. 然后图片会重新出现，但可能有一处变化<br>4. 请点击您发现的变化位置</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="实验流程">
+      <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
     </div>
     
     <!-- 示例页面3 -->
     <div class="tutorial-page" id="page-3">
       <div class="tutorial-text">例如：<br>注意观察这两张图片的区别</div>
-      <img class="tutorial-image" src="example/example_3.jpg" alt="示例1">
+      <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
     </div>
     
     <!-- 示例页面4 -->
@@ -400,6 +400,7 @@
       }
 
       const [imgA, imgB] = imagePairs[current];
+      const pairNumber = current + 1; // 计算当前是第几对图片（从1开始）
       currentImg = new Image();
       currentImg.onload = () => {
         // 获取原始图片的宽高
@@ -417,7 +418,8 @@
 
         // 绘制图片
         ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-        msg.innerText = `${current + 1}/15`;
+        //msg.innerText = `${current + 1}/15`;
+        msg.innerText = `pair${pairNumber}-1`; // 修改此处，显示pairX-1
 
         setTimeout(() => {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -426,7 +428,8 @@
             currentImg = new Image();
             currentImg.onload = () => {
               ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-              msg.innerText = "Click the changed area";
+              //msg.innerText = "Click the changed area";
+              msg.innerText = `pair${pairNumber}-2`; // 修改此处，显示pairX-2
               startTime = performance.now();
               canvas.onclick = recordClick;
             };
