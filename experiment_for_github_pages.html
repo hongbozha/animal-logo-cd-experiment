@@ -337,7 +337,7 @@
     function showNextPage() {
       console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
       
-      if (currentTutorialPage < totalTutorialPages) {
+      if (currentTutorialPage <= totalTutorialPages) {
         // 移除当前页的active类
         const currentPage = document.getElementById(`page-${currentTutorialPage}`);
         currentPage.classList.remove('active');
