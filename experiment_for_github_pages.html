@@ -89,7 +89,8 @@
     let startTime = 0;
 
     async function preloadImages() {
-      const categories = ["ec", "sm", "st"];
+      //const categories = ["ec", "sm", "st"];
+      const categories = ["st"]; //只开st
       const selectedPairs = [];
     
       // 逐类加载
@@ -131,8 +132,9 @@
           pairs.push([`img_${folder}/${otherImage}`, `img_${folder}/${baseImage}`]);
         }
     
-        // 从该类中随机选出2组
-        return getRandomItems(pairs, 5);
+        // 从该类中随机选出n组
+        //return getRandomItems(pairs, 5);
+        return getRandomItems(pairs, 10);
       }
     
       // 从数组中随机抽取 count 个元素
@@ -243,8 +245,8 @@
               console.error("Loading failed：", imgB);
             };
             currentImg.src = imgB;
-          }, 200); // ⬅️ 控制pair中的第一张图和第二张图间隔时长
-        }, 2000); // ⬅️ 控制pair中的第一张图显示时长
+          }, 1500); // ⬅️ 控制pair中的第一张图和第二张图间隔时长
+        }, 1500); // ⬅️ 控制pair中的第一张图显示时长
       };
       currentImg.src = imgA;
     }
