@@ -284,7 +284,7 @@
           img.onerror = resolve;
           img.src = src;
         });
-        preloadPromises.push(p);
+        
       });
       
       await Promise.all(preloadPromises);
@@ -378,14 +378,14 @@
     preloadImages();
 
     // 修改为点击任意位置开始实验
-    document.addEventListener('click', function handleClick(e) {
-      if (imagesReady) {
-        document.removeEventListener('click', handleClick);
-        statusEl.style.display = 'none';
-        document.getElementById('experiment').style.display = 'block';
-        nextImage();
-      }
-    });
+    //document.addEventListener('click', function handleClick(e) {
+      //if (imagesReady) {
+        //document.removeEventListener('click', handleClick);
+        //statusEl.style.display = 'none';
+        //document.getElementById('experiment').style.display = 'block';
+        //nextImage();
+      //}
+    //});
 
     function nextImage() {
       if (current >= imagePairs.length) {
