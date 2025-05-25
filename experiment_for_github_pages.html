@@ -336,26 +336,42 @@
     // 显示下一页
     function showNextPage() {
       if (currentTutorialPage < totalTutorialPages) {
-        document.getElementById(`page-${currentTutorialPage}`).classList.remove('active');
+        // 移除当前页的active类
+        const currentPage = document.getElementById(`page-${currentTutorialPage}`);
+        currentPage.classList.remove('active');
+        
+        // 切换到下一页
         currentTutorialPage++;
-        document.getElementById(`page-${currentTutorialPage}`).classList.add('active');
-        updateTutorialButtons();
+        const nextPage = document.getElementById(`page-${currentTutorialPage}`);
+        
+        if (nextPage) {
+          nextPage.classList.add('active');
+          updateTutorialButtons();
+        } else {
+          console.error(`页面 ${currentTutorialPage} 不存在`);
+        }
       }
     }
-
-    // 更新导航按钮状态
+    
+    // 更新按钮状态（确保最后一页显示“开始实验”）
     function updateTutorialButtons() {
       const prevBtn = document.getElementById('prev-btn');
       const nextBtn = document.getElementById('next-btn');
       
       prevBtn.disabled = currentTutorialPage === 1;
       
-      // 最后一页修改按钮文本
       if (currentTutorialPage === totalTutorialPages) {
         nextBtn.textContent = '开始实验';
       } else {
         nextBtn.textContent = '下一页';
       }
+      
+      // 更新导航点
+      const dots = document.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index + 1 === currentTutorialPage);
+      });
+    }
       
       // 更新导航点
       const dots = document.querySelectorAll('.dot');
