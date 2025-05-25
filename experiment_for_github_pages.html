@@ -174,7 +174,7 @@
     let startTime = 0;
 
     // 示例引导相关变量
-    let currentTutorialPage = 2;
+    let currentTutorialPage = 1;
     const totalTutorialPages = 5;
     
     async function preloadImages() {
@@ -335,29 +335,33 @@
 
     // 显示下一页
     function showNextPage() {
-      console.log(`当前页编号：${currentTutorialPage}`);
-      console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
-      
-      if (currentTutorialPage <= totalTutorialPages) {
-        // 移除当前页的active类
-        const currentPage = document.getElementById(`page-${currentTutorialPage}`);
+    console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
+    
+    if (currentTutorialPage < totalTutorialPages) {
+      const currentPage = document.getElementById(`page-${currentTutorialPage}`);
+      if (currentPage) {
         currentPage.classList.remove('active');
-        
-        // 切换到下一页
-        currentTutorialPage++;
-        const nextPage = document.getElementById(`page-${currentTutorialPage}`);
-        console.log(`下一页元素：`, nextPage);
-        
-        if (nextPage) {
-          nextPage.classList.add('active');
-          updateTutorialButtons();
-        } else {
-          console.error(`页面 ${currentTutorialPage} 不存在`);
-        }
+      } else {
+        console.error(`当前页面 page-${currentTutorialPage} 不存在`);
+        return;
+      }
+      
+      // 切换到下一页
+      currentTutorialPage++; // 确保这里正确递增
+      console.log(`更新后的当前页编号：${currentTutorialPage}`);
+      
+      const nextPage = document.getElementById(`page-${currentTutorialPage}`);
+      if (nextPage) {
+        nextPage.classList.add('active');
+        updateTutorialButtons();
+      } else {
+        console.error(`页面 page-${currentTutorialPage} 不存在`);
+      }
+      } else {
+        console.error(`当前页已超过总页数：${currentTutorialPage}`);
       }
     }
-    
-    // 更新按钮状态（确保最后一页显示“开始实验”）
+  
     function updateTutorialButtons() {
       const prevBtn = document.getElementById('prev-btn');
       const nextBtn = document.getElementById('next-btn');
@@ -373,15 +377,15 @@
         nextBtn.removeEventListener('click', startExperiment);
         nextBtn.addEventListener('click', showNextPage);
       }
-
-      console.log(`按钮文本：${nextBtn.textContent}`);
       
-      // 更新导航点
       const dots = document.querySelectorAll('.dot');
       dots.forEach((dot, index) => {
         dot.classList.toggle('active', index + 1 === currentTutorialPage);
       });
+      
+      console.log(`更新按钮状态：当前页=${currentTutorialPage}, 按钮文本=${nextBtn.textContent}`);
     }
+
 
     // 开始正式实验
     function startExperiment() {
