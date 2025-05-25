@@ -335,6 +335,7 @@
 
     // 显示下一页
     function showNextPage() {
+      console.log(`当前页编号：${currentTutorialPage}`);
       console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
       
       if (currentTutorialPage <= totalTutorialPages) {
@@ -365,9 +366,15 @@
       
       if (currentTutorialPage === totalTutorialPages) {
         nextBtn.textContent = '开始实验';
+        nextBtn.removeEventListener('click', showNextPage);
+        nextBtn.addEventListener('click', startExperiment);
       } else {
         nextBtn.textContent = '下一页';
+        nextBtn.removeEventListener('click', startExperiment);
+        nextBtn.addEventListener('click', showNextPage);
       }
+
+      console.log(`按钮文本：${nextBtn.textContent}`);
       
       // 更新导航点
       const dots = document.querySelectorAll('.dot');
