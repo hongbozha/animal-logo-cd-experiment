@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>Animal Logo CD Experiment</title>
+  <title>Start experiment</title>
   <style>
     body {
       font-family: sans-serif;
@@ -265,14 +265,14 @@
         preloadPromises.push(p);
       });
 
-      // 新增——预加载示例图片
+      // 预加载示例图片
       const tutorialImages = [
         'example/example_1.jpg',
         'example/example_2.jpg',
         'example/example_3.jpg'
       ];
 
-      // 新增——预加载示例图片的进度条
+      // 预加载示例图片的进度条
       tutorialImages.forEach(src => {
         const img = new Image();
         const p = new Promise(resolve => {
@@ -290,14 +290,13 @@
       await Promise.all(preloadPromises);
       imagesReady = true;
       loadingEl.style.display = "none";
-      statusEl.textContent = "Loading finished. Please click anywhere to start.";
-      statusEl.style.cursor = "pointer";
-
-
-      document.addEventListener('click', startTutorialOnClick);
       
-      // 新增——加载完成后显示示例引导
-      //initTutorial();
+      // 修改：加载完成后更新状态消息，提示用户点击开始
+      statusEl.textContent = "Loading finished. Click anywhere to start the tutorial.";
+      statusEl.style.cursor = "pointer";
+      
+      // 添加点击事件，点击后开始教程
+      document.addEventListener('click', startTutorialOnClick);
     }
 
     // 点击屏幕后开始教程
@@ -307,7 +306,7 @@
         initTutorial();
       }
     }
-    
+
     // 初始化示例引导
     function initTutorial() {
       const tutorial = document.getElementById('tutorial');
@@ -348,19 +347,6 @@
       }
     }
 
-    // 显示下一页
-    function showNextPage() {
-    console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
-    
-    if (currentTutorialPage < totalTutorialPages) {
-      const currentPage = document.getElementById(`page-${currentTutorialPage}`);
-      if (currentPage) {
-        currentPage.classList.remove('active');
-      } else {
-        console.error(`当前页面 page-${currentTutorialPage} 不存在`);
-        return;
-      }
-      
     // 显示下一页
     function showNextPage() {
       console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
@@ -412,7 +398,6 @@
       console.log(`更新按钮状态：当前页=${currentTutorialPage}, 按钮文本=${nextBtn.textContent}`);
     }
 
-
     // 开始正式实验
     function startExperiment() {
       document.getElementById('tutorial').style.display = 'none';
@@ -421,16 +406,6 @@
     }
 
     preloadImages();
-
-    // 修改为点击任意位置开始实验
-    //document.addEventListener('click', function handleClick(e) {
-      //if (imagesReady) {
-        //document.removeEventListener('click', handleClick);
-        //statusEl.style.display = 'none';
-        //document.getElementById('experiment').style.display = 'block';
-        //nextImage();
-      //}
-    //});
 
     function nextImage() {
       if (current >= imagePairs.length) {
