@@ -244,7 +244,14 @@
     
       // 生成最终的图像对
       imagePairs = selectedPairs;
-    
+
+      // 预加载示例图片
+      const tutorialImages = [
+        'example/example_1.jpg',
+        'example/example_2.jpg',
+        'example/example_3.jpg'
+      ];
+      
       // 预加载所有图像并显示进度
       let loaded = 0;
       const total = imagePairs.length * 2; // 每对图像包含两个文件
@@ -255,7 +262,7 @@
         const p = new Promise(resolve => {
           img.onload = () => {
             loaded++;
-            progressEl.textContent = Math.round((loaded / (total+3) ) * 100) + "%";
+            progressEl.textContent = Math.round((loaded / (total+tutorialImages.length) ) * 100) + "%";
             resolve();
           };
           img.onerror = resolve;
@@ -264,13 +271,6 @@
         });
         preloadPromises.push(p);
       });
-
-      // 预加载示例图片
-      const tutorialImages = [
-        'example/example_1.jpg',
-        'example/example_2.jpg',
-        'example/example_3.jpg'
-      ];
 
       // 预加载示例图片的进度条
       tutorialImages.forEach(src => {
