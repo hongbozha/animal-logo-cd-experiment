@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>Start experiment</title>
+  <title>Animal Logo CD Experiment</title>
   <style>
     body {
       font-family: sans-serif;
@@ -284,23 +284,35 @@
           img.onerror = resolve;
           img.src = src;
         });
-        
+        preloadPromises.push(p);
       });
       
       await Promise.all(preloadPromises);
       imagesReady = true;
       loadingEl.style.display = "none";
-      //statusEl.textContent = "Loading finished. Please click anywhere to start.";
-      //statusEl.style.cursor = "pointer";
+      statusEl.textContent = "Loading finished. Please click anywhere to start.";
+      statusEl.style.cursor = "pointer";
 
+
+      document.addEventListener('click', startTutorialOnClick);
+      
       // 新增——加载完成后显示示例引导
-      initTutorial();
+      //initTutorial();
     }
 
+    // 点击屏幕后开始教程
+    function startTutorialOnClick(e) {
+      if (imagesReady) {
+        document.removeEventListener('click', startTutorialOnClick);
+        initTutorial();
+      }
+    }
+    
     // 初始化示例引导
     function initTutorial() {
       const tutorial = document.getElementById('tutorial');
       tutorial.style.display = 'block';
+      statusEl.style.display = 'none'; // 隐藏状态消息，开始教程
       
       // 创建导航点
       const dotsContainer = document.getElementById('dots');
@@ -313,14 +325,17 @@
       
       // 设置导航按钮事件
       document.getElementById('prev-btn').addEventListener('click', showPrevPage);
-      document.getElementById('next-btn').addEventListener('click', showNextPage);
       
-      // 最后一页的"下一页"按钮改为"开始实验"
+      // 修复：只绑定一次事件，避免重复绑定
       document.getElementById('next-btn').addEventListener('click', function() {
         if (currentTutorialPage === totalTutorialPages) {
           startExperiment();
+        } else {
+          showNextPage();
         }
       });
+      
+      updateTutorialButtons(); // 初始化按钮状态
     }
 
     // 显示上一页
@@ -346,36 +361,47 @@
         return;
       }
       
-      // 切换到下一页
-      currentTutorialPage++; // 确保这里正确递增
-      console.log(`更新后的当前页编号：${currentTutorialPage}`);
+    // 显示下一页
+    function showNextPage() {
+      console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
       
-      const nextPage = document.getElementById(`page-${currentTutorialPage}`);
-      if (nextPage) {
-        nextPage.classList.add('active');
-        updateTutorialButtons();
-      } else {
-        console.error(`页面 page-${currentTutorialPage} 不存在`);
-      }
+      if (currentTutorialPage < totalTutorialPages) {
+        const currentPage = document.getElementById(`page-${currentTutorialPage}`);
+        if (currentPage) {
+          currentPage.classList.remove('active');
+        } else {
+          console.error(`当前页面 page-${currentTutorialPage} 不存在`);
+          return;
+        }
+        
+        // 切换到下一页
+        currentTutorialPage++;
+        console.log(`更新后的当前页编号：${currentTutorialPage}`);
+        
+        const nextPage = document.getElementById(`page-${currentTutorialPage}`);
+        if (nextPage) {
+          nextPage.classList.add('active');
+          updateTutorialButtons();
+        } else {
+          console.error(`页面 page-${currentTutorialPage} 不存在`);
+        }
       } else {
         console.error(`当前页已超过总页数：${currentTutorialPage}`);
       }
     }
   
+    // 更新教程按钮状态
     function updateTutorialButtons() {
       const prevBtn = document.getElementById('prev-btn');
       const nextBtn = document.getElementById('next-btn');
       
       prevBtn.disabled = currentTutorialPage === 1;
       
+      // 修复：只更新按钮文本，不重新绑定事件
       if (currentTutorialPage === totalTutorialPages) {
         nextBtn.textContent = 'Start the experiment';
-        nextBtn.removeEventListener('click', showNextPage);
-        nextBtn.addEventListener('click', startExperiment);
       } else {
         nextBtn.textContent = 'Next';
-        nextBtn.removeEventListener('click', startExperiment);
-        nextBtn.addEventListener('click', showNextPage);
       }
       
       const dots = document.querySelectorAll('.dot');
