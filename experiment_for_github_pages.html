@@ -88,38 +88,37 @@
   <div id="tutorial">
     <!-- 示例页面1 -->
     <div class="tutorial-page active" id="page-1">
-      <div class="tutorial-text">欢迎参加实验！<br>本实验将测试您发现图片中变化的能力。</div>
+      <div class="tutorial-text">Welcome!<br>Before the main task begins, we’d like to show you a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
     </div>
     
     <!-- 示例页面2 -->
     <div class="tutorial-page" id="page-2">
-      <div class="tutorial-text">实验流程：<br>1. 您将看到一张图片<br>2. 图片会短暂消失<br>3. 然后图片会重新出现，但可能有一处变化<br>4. 请点击您发现的变化位置</div>
+      <div class="tutorial-text">This is the first image in the example pair. Please pay attention to the details — something in the image will change. Click anywhere to continue.</div>
       <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
     </div>
     
     <!-- 示例页面3 -->
     <div class="tutorial-page" id="page-3">
-      <div class="tutorial-text">例如：<br>注意观察这两张图片的区别</div>
+      <div class="tutorial-text">This is the second image in the example pair. Try to spot what has changed compared to the previous image. Click anywhere to continue.</div>
       <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
     </div>
     
     <!-- 示例页面4 -->
     <div class="tutorial-page" id="page-4">
-      <div class="tutorial-text">变化在这里！<br>当您看到这样的变化时，请点击它。</div>
-      <div class="tutorial-text">准备好了吗？<br>点击"开始实验"按钮开始测试您的观察力！</div>
+      <div class="tutorial-text">Here we show the difference!<br>The highlighted area below shows where the change occurred. In the main task, you will be asked to click on the changed area in the second image of each pair. Click anywhere to continue.</div>
       <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
     </div>
     
     <!-- 示例页面5 -->
     <div class="tutorial-page" id="page-5">
-      <div class="tutorial-text">准备好了吗？<br>点击"开始实验"按钮开始测试您的观察力！</div>
+      <div class="tutorial-text">Are you ready?<br>Please click "Start the experiment".</div>
     </div>
     
     <!-- 导航按钮 -->
     <div id="tutorial-nav">
-      <button class="nav-button" id="prev-btn" disabled>上一页</button>
+      <button class="nav-button" id="prev-btn" disabled>Previous</button>
       <div id="dots"></div>
-      <button class="nav-button" id="next-btn">下一页</button>
+      <button class="nav-button" id="next-btn">Next</button>
     </div>
   </div>
   
@@ -370,11 +369,11 @@
       prevBtn.disabled = currentTutorialPage === 1;
       
       if (currentTutorialPage === totalTutorialPages) {
-        nextBtn.textContent = '开始实验';
+        nextBtn.textContent = 'Start the experiment';
         nextBtn.removeEventListener('click', showNextPage);
         nextBtn.addEventListener('click', startExperiment);
       } else {
-        nextBtn.textContent = '下一页';
+        nextBtn.textContent = 'Next';
         nextBtn.removeEventListener('click', startExperiment);
         nextBtn.addEventListener('click', showNextPage);
       }
