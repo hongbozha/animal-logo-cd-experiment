@@ -255,7 +255,7 @@
         const p = new Promise(resolve => {
           img.onload = () => {
             loaded++;
-            progressEl.textContent = Math.round((loaded / total) * 100) + "%";
+            progressEl.textContent = Math.round((loaded / (total+3) ) * 100) + "%";
             resolve();
           };
           img.onerror = resolve;
