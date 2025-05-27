@@ -418,57 +418,68 @@
       if (current >= imagePairs.length) {
         document.getElementById('experiment').style.display = 'none';
         endScreen.style.display = 'block';
-
         setTimeout(() => {
-        window.location.href = "https://app.prolific.com/submissions/complete?cc=C1OH8WG7";
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=C1OH8WG7";
         }, 1000);
-  
         return;
       }
-
-      const [imgA, imgB] = imagePairs[current];
-      const pairNumber = current + 1; // 计算当前是第几对图片（从1开始）
-      currentImg = new Image();
-      currentImg.onload = () => {
-        // 获取原始图片的宽高
-        const originalWidth = currentImg.width;
-        const originalHeight = currentImg.height;
-
-        // 设置统一的高度
-        const unifiedHeight = 900;
-        const scale = unifiedHeight / originalHeight;
-        const unifiedWidth = originalWidth * scale;
-
-        // 调整画布大小
-        canvas.width = unifiedWidth;
-        canvas.height = unifiedHeight;
-
-        // 绘制图片
-        ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-        //msg.innerText = `${current + 1}/15`;
-        msg.innerText = `pair${pairNumber}-1`; // 修改此处，显示pairX-1
-
+    
+      // 显示校准图片
+      const calibrationImg = new Image();
+      calibrationImg.src = 'Calibration.jpeg';
+      calibrationImg.onload = () => {
+        const originalWidth = calibrationImg.width;
+        const originalHeight = calibrationImg.height;
+        const scale = 900 / originalHeight; // 统一高度900px
+        const calibWidth = originalWidth * scale;
+        const calibHeight = 900;
+    
+        canvas.width = calibWidth;
+        canvas.height = calibHeight;
+        ctx.drawImage(calibrationImg, 0, 0, calibWidth, calibHeight);
+    
         setTimeout(() => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          msg.innerText = "Loading...";
-          setTimeout(() => {
-            currentImg = new Image();
-            currentImg.onload = () => {
-              ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
-              //msg.innerText = "Click the changed area";
-              msg.innerText = `pair${pairNumber}-2`; // 修改此处，显示pairX-2
-              startTime = performance.now();
-              canvas.onclick = recordClick;
-            };
-            currentImg.onerror = () => {
-              msg.innerText = "❌ Loading failed";
-              console.error("Loading failed：", imgB);
-            };
-            currentImg.src = imgB;
-          }, 200); // ⬅️ 控制pair中的第一张图和第二张图间隔时长
-        }, 1500); // ⬅️ 控制pair中的第一张图显示时长
+          const [imgA, imgB] = imagePairs[current];
+          const pairNumber = current + 1;
+          currentImg = new Image();
+    
+          currentImg.onload = () => {
+            const originalWidth = currentImg.width;
+            const originalHeight = currentImg.height;
+            const scale = 900 / originalHeight;
+            const unifiedWidth = originalWidth * scale;
+            const unifiedHeight = 900;
+    
+            canvas.width = unifiedWidth;
+            canvas.height = unifiedHeight;
+            ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
+            msg.innerText = `pair${pairNumber}-1`;
+    
+            setTimeout(() => {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              msg.innerText = "Loading...";
+              setTimeout(() => {
+                const secondImg = new Image();
+                secondImg.onload = () => {
+                  ctx.drawImage(secondImg, 0, 0, unifiedWidth, unifiedHeight);
+                  msg.innerText = `pair${pairNumber}-2`;
+                  startTime = performance.now();
+                  canvas.onclick = recordClick;
+                };
+                secondImg.src = imgB;
+              }, 200);
+            }, 1500);
+          };
+    
+          currentImg.src = imgA;
+        }, 500);
       };
-      currentImg.src = imgA;
+    
+      calibrationImg.onerror = () => {
+        console.error("Calibration image failed to load. Skipping...");
+        // 直接加载实验图片对
+        loadExperimentImagePair();
+      };
     }
 
     function recordClick(e) {      
