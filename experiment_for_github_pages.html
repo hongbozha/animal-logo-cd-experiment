@@ -92,10 +92,11 @@
       display: block;
     }
     .tutorial-image {
-      width: 1200px; /* 固定宽度 */
+      max-height: 80vh; /* 高度最多占屏幕的80% */
+      width: auto;      /* 自动等比例缩放宽度 */
       border: 0px solid #ddd;
-      margin: 0 auto; /* 图片水平居中 */
-      display: block; /* 确保 margin 生效 */
+      margin: 0 auto;
+      display: block;
     }
     .tutorial-text {
       font-size: 20px;
@@ -602,9 +603,10 @@
           currentImg.onload = () => {
             const originalWidth = currentImg.width;
             const originalHeight = currentImg.height;
-            const scale = 900 / originalHeight;
+            const maxHeight = Math.min(window.innerHeight * 0.8, 900);  // 屏幕最多占 80%，最大 900
+            const scale = maxHeight / originalHeight;
             const unifiedWidth = originalWidth * scale;
-            const unifiedHeight = 900;
+            const unifiedHeight = maxHeight;
     
             canvas.width = unifiedWidth;
             canvas.height = unifiedHeight;
