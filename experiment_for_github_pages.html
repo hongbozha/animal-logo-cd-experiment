@@ -587,9 +587,10 @@
       calibrationImg.onload = () => {
         const originalWidth = calibrationImg.width;
         const originalHeight = calibrationImg.height;
-        const scale = 900 / originalHeight; // 统一高度900px
+        const maxHeight = Math.min(window.innerHeight * 0.8, 900);
+        const scale = maxHeight / originalHeight;
         const calibWidth = originalWidth * scale;
-        const calibHeight = 900;
+        const calibHeight = maxHeight;
     
         canvas.width = calibWidth;
         canvas.height = calibHeight;
