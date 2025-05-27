@@ -244,17 +244,17 @@
   </div>
   <script>
     const confirmBtn = document.getElementById("confirm-btn");
-    const consentBox = document.getElementById("consent-checkbox");
-    const consentContainer = document.getElementById("consent-container");
-    const mainContent = document.getElementById("main-content"); // 新增引用
-    let confirmClicked = false;
+    const declineBtn = document.getElementById("decline-btn");
+    const mainContent = document.getElementById("main-content");
     let timeoutHandle = setTimeout(() => {
-      if (!confirmClicked) window.location.href = "about:blank";
-    }, 5 * 60 * 1000); // 5分钟未操作退出
+      if (!confirmClicked && !declineClicked) {
+        window.location.href = "about:blank";
+      }
+    }, 5 * 60 * 1000); // 5分钟倒计时
 
     let confirmClicked = false;
     let declineClicked = false;
-    
+
     // 同意按钮逻辑
     confirmBtn.addEventListener("click", () => {
       confirmClicked = true;
