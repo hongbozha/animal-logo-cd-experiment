@@ -92,7 +92,7 @@
       display: block;
     }
     .tutorial-image {
-      width: 1200px; /* 固定宽度 */
+      width: 960px; /* 固定宽度 */
       border: 0px solid #ddd;
       margin: 0 auto; /* 图片水平居中 */
       display: block; /* 确保 margin 生效 */
@@ -586,13 +586,9 @@
       calibrationImg.onload = () => {
         const originalWidth = calibrationImg.width;
         const originalHeight = calibrationImg.height;
-        const scale = 900 / originalHeight; // 统一高度900px
-        const calibWidth = originalWidth * scale;
-        const calibHeight = 900;
-    
-        canvas.width = calibWidth;
-        canvas.height = calibHeight;
-        ctx.drawImage(calibrationImg, 0, 0, calibWidth, calibHeight);
+        canvas.width = 960;
+        canvas.height = 720;
+        ctx.drawImage(calibrationImg, 0, 0, 960, 720);
     
         setTimeout(() => {
           const [imgA, imgB] = imagePairs[current];
@@ -602,13 +598,9 @@
           currentImg.onload = () => {
             const originalWidth = currentImg.width;
             const originalHeight = currentImg.height;
-            const scale = 900 / originalHeight;
-            const unifiedWidth = originalWidth * scale;
-            const unifiedHeight = 900;
-    
-            canvas.width = unifiedWidth;
-            canvas.height = unifiedHeight;
-            ctx.drawImage(currentImg, 0, 0, unifiedWidth, unifiedHeight);
+            canvas.width = 960;
+            canvas.height = 720;
+            ctx.drawImage(currentImg, 0, 0, 960, 720);
             msg.innerText = `pair${pairNumber}-1`;
     
             setTimeout(() => {
@@ -617,7 +609,7 @@
               setTimeout(() => {
                 const secondImg = new Image();
                 secondImg.onload = () => {
-                  ctx.drawImage(secondImg, 0, 0, unifiedWidth, unifiedHeight);
+                  ctx.drawImage(secondImg, 0, 0, 960, 720);
                   msg.innerText = `pair${pairNumber}-2`;
                   startTime = performance.now();
                   canvas.onclick = recordClick;
