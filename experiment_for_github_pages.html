@@ -243,37 +243,50 @@
     </div>
   </div>
   <script>
-    const confirmBtn = document.getElementById("confirm-btn");
-    const declineBtn = document.getElementById("decline-btn");
-    const mainContent = document.getElementById("main-content");
-    let timeoutHandle = setTimeout(() => {
-      if (!confirmClicked && !declineClicked) {
+  // 获取免责声明容器（新增关键行）
+  const consentContainer = document.getElementById("consent-container");
+  
+  const confirmBtn = document.getElementById("confirm-btn");
+  const declineBtn = document.getElementById("decline-btn");
+  const mainContent = document.getElementById("main-content");
+  let timeoutHandle = setTimeout(() => {
+    if (!confirmClicked && !declineClicked) {
+      window.location.href = "about:blank";
+    }
+  }, 5 * 60 * 1000); // 5分钟倒计时
+
+  let confirmClicked = false;
+  let declineClicked = false;
+
+  // 同意按钮逻辑（已修正）
+  confirmBtn.addEventListener("click", () => {
+    confirmClicked = true;
+    clearTimeout(timeoutHandle); // 清除倒计时
+    
+    // 隐藏免责声明容器（确保变量已定义）
+    if (consentContainer) {
+      consentContainer.style.display = "none";
+    } else {
+      console.error("Error: consentContainer not found");
+    }
+    
+    mainContent.style.display = "block";
+    preloadImages(); // 开始加载实验
+  });
+
+  // 拒绝按钮逻辑（可选：确保容器隐藏逻辑一致）
+  declineBtn.addEventListener("click", () => {
+    if (!declineClicked) {
+      declineClicked = true;
+      clearTimeout(timeoutHandle);
+      if (confirm("Are you sure you want to decline participation? This will close the experiment.")) {
+        if (consentContainer) {
+          consentContainer.style.display = "none"; // 可选：隐藏容器
+        }
         window.location.href = "about:blank";
       }
-    }, 5 * 60 * 1000); // 5分钟倒计时
-
-    let confirmClicked = false;
-    let declineClicked = false;
-
-    // 同意按钮逻辑
-    confirmBtn.addEventListener("click", () => {
-      confirmClicked = true;
-      clearTimeout(timeoutHandle); // 清除倒计时
-      consentContainer.style.display = "none";
-      mainContent.style.display = "block";
-      preloadImages(); // 开始加载实验
-    });
-
-    // 拒绝按钮逻辑
-    declineBtn.addEventListener("click", () => {
-      if (!declineClicked) {
-        declineClicked = true;
-        clearTimeout(timeoutHandle); // 清除倒计时
-        if (confirmDialog()) { // 显示确认弹窗
-          window.location.href = "about:blank";
-        }
-      }
-    });
+    }
+  });
 
     // 确认弹窗函数
     function confirmDialog() {
