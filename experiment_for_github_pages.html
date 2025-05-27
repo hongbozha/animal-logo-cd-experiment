@@ -92,11 +92,10 @@
       display: block;
     }
     .tutorial-image {
-      max-height: 80vh; /* 高度最多占屏幕的80% */
-      width: auto;      /* 自动等比例缩放宽度 */
+      width: 1200px; /* 固定宽度 */
       border: 0px solid #ddd;
-      margin: 0 auto;
-      display: block;
+      margin: 0 auto; /* 图片水平居中 */
+      display: block; /* 确保 margin 生效 */
     }
     .tutorial-text {
       font-size: 20px;
@@ -198,7 +197,7 @@
     <div id="tutorial">
       <!-- 示例页面1 -->
       <div class="tutorial-page active" id="page-1">
-        <img id="welcome-calib-img" class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
+        <img class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
         <div class="tutorial-text">Welcome! Before we begin the main task, we’d like to provide a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
       </div>
       
@@ -244,15 +243,6 @@
     </div>
   </div>
   <script>
-    function getTargetSize(originalWidth, originalHeight) {
-      const maxHeight = Math.min(window.innerHeight * 0.8, 900); // 最大高度
-      const scale = maxHeight / originalHeight;
-      return {
-        width: originalWidth * scale,
-        height: maxHeight
-      };
-    }
-
   // 获取免责声明容器（新增关键行）
   const consentContainer = document.getElementById("consent-container");
   
@@ -508,14 +498,6 @@
       });
       
       updateTutorialButtons(); // 初始化按钮状态
-      
-      // 修改 welcome 页的 Calibration 图像尺寸
-      const welcomeCalib = document.getElementById('welcome-calib-img');
-      welcomeCalib.onload = () => {
-        const size = getTargetSize(welcomeCalib.naturalWidth, welcomeCalib.naturalHeight);
-        welcomeCalib.style.width = `${size.width}px`;
-        welcomeCalib.style.height = `${size.height}px`;
-      };
     }
 
     // 显示上一页
@@ -604,10 +586,9 @@
       calibrationImg.onload = () => {
         const originalWidth = calibrationImg.width;
         const originalHeight = calibrationImg.height;
-        const maxHeight = Math.min(window.innerHeight * 0.8, 900);
-        const scale = maxHeight / originalHeight;
+        const scale = 900 / originalHeight; // 统一高度900px
         const calibWidth = originalWidth * scale;
-        const calibHeight = maxHeight;
+        const calibHeight = 900;
     
         canvas.width = calibWidth;
         canvas.height = calibHeight;
@@ -621,10 +602,9 @@
           currentImg.onload = () => {
             const originalWidth = currentImg.width;
             const originalHeight = currentImg.height;
-            const maxHeight = Math.min(window.innerHeight * 0.8, 900);  // 屏幕最多占 80%，最大 900
-            const scale = maxHeight / originalHeight;
+            const scale = 900 / originalHeight;
             const unifiedWidth = originalWidth * scale;
-            const unifiedHeight = maxHeight;
+            const unifiedHeight = 900;
     
             canvas.width = unifiedWidth;
             canvas.height = unifiedHeight;
