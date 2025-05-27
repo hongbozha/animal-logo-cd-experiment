@@ -9,68 +9,6 @@
       text-align: center;
       padding: 30px;
     }
-    /* 免责声明页面样式 */
-    #disclaimer {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background-color: white;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .disclaimer-content {
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: left;
-    }
-
-    #countdown {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      color: #ff0000;
-    }
-
-    .checkbox-container {
-      margin: 20px 0;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .radio-container {
-      display: flex;
-      gap: 10px;
-      margin: 10px 0;
-    }
-
-    button {
-      padding: 12px 24px;
-      font-size: 18px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 20px;
-    }
-
-    #yes-btn {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-    }
-
-    #no-btn {
-      background-color: #ff4444;
-      color: white;
-      border: none;
-    }
     canvas {
       border: 2px solid #333;
       margin-top: 20px;
@@ -147,140 +85,60 @@
   </style>
 </head>
 <body>
-  <!-- 免责声明页面 -->
-  <div id="disclaimer">
-    <div class="disclaimer-content">
-      <h2>Disclaimer</h2>
-      <p>Please read the following carefully:</p>
-      <p>This is a scientific experiment. By selecting "Yes", you agree to the terms and conditions. Selecting "No" will close the experiment.</p>
-      <div class="radio-container">
-        <input type="radio" id="consent-yes" name="consent" value="yes" required>
-        <label for="consent-yes">Yes, I agree to participate.</label>
-        <input type="radio" id="consent-no" name="consent" value="no">
-        <label for="consent-no">No, I do not agree.</label>
-      </div>
-      <div class="button-container">
-        <button id="confirm-btn">Confirm</button>
-      </div>
-    </div>
-    <div id="countdown">5:00</div>
-  </div>
+  <h1>Can you spot the change? Click it!</h1>
+  <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
+  <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
 
-  <!-- 原页面内容，初始隐藏 -->
-  <div id="main-content" style="display: none;">
-    <h1>Can you spot the change? Click it!</h1>
-    <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
-    <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
-  
-    <!-- 新增示例引导容器 -->
-    <div id="tutorial">
-      <!-- 示例页面1 -->
-      <div class="tutorial-page active" id="page-1">
-        <img class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
-        <div class="tutorial-text">Welcome! Before we begin the main task, we’d like to provide a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
-      </div>
-      
-      <!-- 示例页面2 -->
-      <div class="tutorial-page" id="page-2">
-        <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
-        <div class="tutorial-text">This is the first image in the example pair. Something in the image will change.<br>Please pay attention to the details. Click Next to continue.</div>
-      </div>
-      
-      <!-- 示例页面3 -->
-      <div class="tutorial-page" id="page-3">
-        <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
-        <div class="tutorial-text">This is the second image in the example pair. Something in the image has changed.<br>Try to spot the change compared to the previous image. Click Next to continue.</div>
-      </div>
-      
-      <!-- 示例页面4 -->
-      <div class="tutorial-page" id="page-4">
-        <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
-        <div class="tutorial-text">The highlighted area below shows where the change occurred.<br>In the main task, you will be asked to click on the changed area in the second image of each pair. Click Next to continue.</div>
-      </div>
-      
-      <!-- 示例页面5 -->
-      <div class="tutorial-page" id="page-5">
-        <img class="tutorial-image" src="Slide1.jpeg" alt="示例3">
-        <div class="tutorial-text">In the actual task, two images will be shown one after another in each trial. Your task is to click on the area that has changed in the second image.<br>Please try to respond as quickly and accurately as you can. Start the experiment when you are ready.</div>
-      </div>
-      
-      <!-- 导航按钮 -->
-      <div id="tutorial-nav">
-        <button class="nav-button" id="prev-btn" disabled>Previous</button>
-        <div id="dots"></div>
-        <button class="nav-button" id="next-btn">Next</button>
-      </div>
+  <!-- 新增示例引导容器 -->
+  <div id="tutorial">
+    <!-- 示例页面1 -->
+    <div class="tutorial-page active" id="page-1">
+      <img class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
+      <div class="tutorial-text">Welcome! Before we begin the main task, we’d like to provide a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
     </div>
     
-    <div id="experiment" style="display:none;">
-      <canvas id="canvas" width="600"></canvas>
-      <p id="msg">Preparing ...</p>
+    <!-- 示例页面2 -->
+    <div class="tutorial-page" id="page-2">
+      <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
+      <div class="tutorial-text">This is the first image in the example pair. Something in the image will change.<br>Please pay attention to the details. Click Next to continue.</div>
     </div>
-  
-    <div id="end-screen" style="display:none;">
-      ✅ Experiment completed. Thanks for your participation! Redirecting to Prolific...
+    
+    <!-- 示例页面3 -->
+    <div class="tutorial-page" id="page-3">
+      <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
+      <div class="tutorial-text">This is the second image in the example pair. Something in the image has changed.<br>Try to spot the change compared to the previous image. Click Next to continue.</div>
+    </div>
+    
+    <!-- 示例页面4 -->
+    <div class="tutorial-page" id="page-4">
+      <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
+      <div class="tutorial-text">The highlighted area below shows where the change occurred.<br>In the main task, you will be asked to click on the changed area in the second image of each pair. Click Next to continue.</div>
+    </div>
+    
+    <!-- 示例页面5 -->
+    <div class="tutorial-page" id="page-5">
+      <img class="tutorial-image" src="Slide1.jpeg" alt="示例3">
+      <div class="tutorial-text">In the actual task, two images will be shown one after another in each trial. Your task is to click on the area that has changed in the second image.<br>Please try to respond as quickly and accurately as you can. Start the experiment when you are ready.</div>
+    </div>
+    
+    <!-- 导航按钮 -->
+    <div id="tutorial-nav">
+      <button class="nav-button" id="prev-btn" disabled>Previous</button>
+      <div id="dots"></div>
+      <button class="nav-button" id="next-btn">Next</button>
     </div>
   </div>
   
+  <div id="experiment" style="display:none;">
+    <canvas id="canvas" width="600"></canvas>
+    <p id="msg">Preparing ...</p>
+  </div>
+
+  <div id="end-screen" style="display:none;">
+    ✅ Experiment completed. Thanks for your participation! Redirecting to Prolific...
+  </div>
+
   <script>
-    // 免责声明相关变量
-    const disclaimer = document.getElementById('disclaimer');
-    const mainContent = document.getElementById('main-content');
-    const countdownElement = document.getElementById('countdown');
-    const confirmBtn = document.getElementById('confirm-btn');
-    let countdown = 300; // 5分钟（秒）
-    let timer;
-
-    // 初始化免责声明
-    function initDisclaimer() {
-      disclaimer.style.display = 'flex';
-      startCountdown();
-      confirmBtn.addEventListener('click', handleConsent);
-    }
-
-    // 启动倒计时
-    function startCountdown() {
-      timer = setInterval(() => {
-        if (countdown <= 0) {
-          clearInterval(timer);
-          closeExperiment();
-        } else {
-          const minutes = Math.floor(countdown / 60);
-          const seconds = countdown % 60;
-          countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          countdown--;
-        }
-      }, 1000);
-    }
-
-    // 处理用户确认
-    function handleConsent() {
-      const consentYes = document.getElementById('consent-yes');
-      const consentNo = document.getElementById('consent-no');
-
-      if (consentYes.checked) {
-        clearInterval(timer);
-        disclaimer.style.display = 'none';
-        mainContent.style.display = 'block';
-        preloadImages(); // 开始加载实验数据
-      } else if (consentNo.checked) {
-        clearInterval(timer);
-        closeExperiment();
-      } else {
-        alert("Please select an option before confirming.");
-      }
-    }
-
-    // 关闭实验
-    function closeExperiment() {
-      alert("Thank you for your consideration. The experiment will now close.");
-      window.location.href = "about:blank";
-    }
-
-    // 页面加载后立即显示免责声明
-    window.onload = initDisclaimer;
-
-      
     // 获取 URL 参数
     function getQueryParams() {
       const params = {};
