@@ -19,7 +19,7 @@
       border: 1px solid #ccc;
       padding: 20px;
       margin-bottom: 30px;
-      max-width: 900px;
+      max-width: 1200px;
       margin-left: auto;
       margin-right: auto;
       text-align: left;
@@ -34,6 +34,14 @@
     #confirm-btn {
       margin-top: 20px;
       padding: 10px 20px;
+      max-width: 1200px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #decline-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      max-width: 1200px;
       font-size: 18px;
       cursor: pointer;
     }
@@ -157,12 +165,15 @@
   
     <p><strong>Thank you for taking the time to read this Participant Information Leaflet.</strong></p>
 
-    <label>
-      <input type="checkbox" id="consent-checkbox" />
-      I have read the above and consent to take part in this study.
-    </label>
-    <button id="confirm-btn">Confirm and Start</button>
+    <!-- Consent button -->
+    <button id="confirm-btn">I have read the above and consent to take part in this study.</button>
+  
+    <!-- Decline button -->
+    <button id="decline-btn">I do not wish to participate.</button>
+    <p class="warning">If you click this button, the study will exit and you will not be able to participate.</p>
+  
   </div>
+  
   <div id="main-content" style="display: none;">
     <h1>Can you spot the change? Click it!</h1>
     <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
