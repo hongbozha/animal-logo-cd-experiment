@@ -9,6 +9,50 @@
       text-align: center;
       padding: 30px;
     }
+    /* 免责声明页面样式 */
+    #disclaimer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background-color: white;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .disclaimer-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    #countdown {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: #ff0000;
+    }
+
+    .checkbox-container {
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
     canvas {
       border: 2px solid #333;
       margin-top: 20px;
@@ -85,6 +129,33 @@
   </style>
 </head>
 <body>
+  <!-- 免责声明页面 -->
+  <div id="disclaimer">
+    <div class="disclaimer-content">
+      <h2>Disclaimer</h2>
+      <p>Please read the following carefully:</p>
+      <p>This is a scientific experiment. By participating, you agree to the terms and conditions.</p>
+      <div class="checkbox-container">
+        <input type="checkbox" id="consent" required>
+        <label for="consent">I agree to participate in this experiment.</label>
+      </div>
+      <button onclick="handleConsent()">Confirm</button>
+    </div>
+    <div id="countdown">5:00</div>
+  </div>
+
+  <!-- 原页面内容，初始隐藏 -->
+  <div id="main-content" style="display: none;">
+    <h1>Can you spot the change? Click it!</h1>
+    <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
+    <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
+
+    <!-- 教程容器 -->
+    <div id="tutorial">...</div>
+    
+    <div id="experiment" style="display:none;">...</div>
+    <div id="end-screen" style="display:none;">...</div>
+  </div>
   <h1>Can you spot the change? Click it!</h1>
   <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
   <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
@@ -139,6 +210,55 @@
   </div>
 
   <script>
+    // 免责声明相关变量
+    const disclaimer = document.getElementById('disclaimer');
+    const mainContent = document.getElementById('main-content');
+    const countdownElement = document.getElementById('countdown');
+    let countdown = 300; // 5分钟（秒）
+    let timer;
+
+    // 初始化免责声明
+    function initDisclaimer() {
+      disclaimer.style.display = 'flex';
+      startCountdown();
+    }
+
+    // 启动倒计时
+    function startCountdown() {
+      timer = setInterval(() => {
+        if (countdown <= 0) {
+          clearInterval(timer);
+          closeExperiment();
+        } else {
+          const minutes = Math.floor(countdown / 60);
+          const seconds = countdown % 60;
+          countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          countdown--;
+        }
+      }, 1000);
+    }
+
+    // 处理用户确认
+    function handleConsent() {
+      const consent = document.getElementById('consent');
+      if (consent.checked) {
+        clearInterval(timer);
+        disclaimer.style.display = 'none';
+        mainContent.style.display = 'block';
+        preloadImages(); // 开始加载实验数据
+      } else {
+        alert("Please accept the consent to continue.");
+      }
+    }
+
+    // 关闭实验
+    function closeExperiment() {
+      alert("Time limit exceeded. The experiment will now close.");
+      window.location.href = "about:blank"; // 跳转空白页
+
+
+
+      
     // 获取 URL 参数
     function getQueryParams() {
       const params = {};
