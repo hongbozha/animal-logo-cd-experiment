@@ -221,24 +221,27 @@
     const confirmBtn = document.getElementById("confirm-btn");
     const consentBox = document.getElementById("consent-checkbox");
     const consentContainer = document.getElementById("consent-container");
-    const statusEl = document.getElementById('status-msg');
-
+    const mainContent = document.getElementById("main-content"); // 新增引用
     let confirmClicked = false;
     let timeoutHandle = setTimeout(() => {
       if (!confirmClicked) window.location.href = "about:blank";
-    }, 5 * 60 * 1000); // 5分钟未操作退出
+    }, 1 * 60 * 1000); // 5分钟未操作退出
 
     confirmBtn.addEventListener("click", () => {
       confirmClicked = true;
       if (consentBox.checked) {
+        // 隐藏免责声明容器
         consentContainer.style.display = "none";
-        preloadImages(); // ✅ 只有同意后才开始加载资源
+        // 显示主内容容器
+        document.getElementById("main-content").style.display = "block";
+        // 开始加载资源
+        preloadImages();
       } else {
         alert("You must check the box to participate in the study.");
         window.location.href = "about:blank";
       }
     });
-    
+        
     // 获取 URL 参数
     function getQueryParams() {
       const params = {};
@@ -514,7 +517,7 @@
       nextImage();
     }
 
-    preloadImages();
+    //preloadImages();
 
     function nextImage() {
       if (current >= imagePairs.length) {
