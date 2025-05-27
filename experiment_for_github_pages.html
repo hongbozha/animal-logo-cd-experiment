@@ -163,60 +163,60 @@
     </label>
     <button id="confirm-btn">Confirm and Start</button>
   </div>
-
-  <h1>Can you spot the change? Click it!</h1>
-  <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
-  <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
-
-  <!-- 新增示例引导容器 -->
-  <div id="tutorial">
-    <!-- 示例页面1 -->
-    <div class="tutorial-page active" id="page-1">
-      <img class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
-      <div class="tutorial-text">Welcome! Before we begin the main task, we’d like to provide a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
-    </div>
-    
-    <!-- 示例页面2 -->
-    <div class="tutorial-page" id="page-2">
-      <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
-      <div class="tutorial-text">This is the first image in the example pair. Something in the image will change.<br>Please pay attention to the details. Click Next to continue.</div>
-    </div>
-    
-    <!-- 示例页面3 -->
-    <div class="tutorial-page" id="page-3">
-      <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
-      <div class="tutorial-text">This is the second image in the example pair. Something in the image has changed.<br>Try to spot the change compared to the previous image. Click Next to continue.</div>
-    </div>
-    
-    <!-- 示例页面4 -->
-    <div class="tutorial-page" id="page-4">
-      <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
-      <div class="tutorial-text">The highlighted area below shows where the change occurred.<br>In the main task, you will be asked to click on the changed area in the second image of each pair. Click Next to continue.</div>
-    </div>
-    
-    <!-- 示例页面5 -->
-    <div class="tutorial-page" id="page-5">
-      <img class="tutorial-image" src="Slide1.jpeg" alt="示例3">
-      <div class="tutorial-text">In the actual task, two images will be shown one after another in each trial. Your task is to click on the area that has changed in the second image.<br>Please try to respond as quickly and accurately as you can. Start the experiment when you are ready.</div>
-    </div>
-    
-    <!-- 导航按钮 -->
-    <div id="tutorial-nav">
-      <button class="nav-button" id="prev-btn" disabled>Previous</button>
-      <div id="dots"></div>
-      <button class="nav-button" id="next-btn">Next</button>
-    </div>
-  </div>
+  <div id="main-content" style="display: none;">
+    <h1>Can you spot the change? Click it!</h1>
+    <p id="status-msg" style="font-size:28px;">Please wait for the resources to be loaded</p>
+    <div id="loading">🔄 Loading: <span id="progress">0%</span></div>
   
-  <div id="experiment" style="display:none;">
-    <canvas id="canvas" width="600"></canvas>
-    <p id="msg">Preparing ...</p>
+    <!-- 新增示例引导容器 -->
+    <div id="tutorial">
+      <!-- 示例页面1 -->
+      <div class="tutorial-page active" id="page-1">
+        <img class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
+        <div class="tutorial-text">Welcome! Before we begin the main task, we’d like to provide a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
+      </div>
+      
+      <!-- 示例页面2 -->
+      <div class="tutorial-page" id="page-2">
+        <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
+        <div class="tutorial-text">This is the first image in the example pair. Something in the image will change.<br>Please pay attention to the details. Click Next to continue.</div>
+      </div>
+      
+      <!-- 示例页面3 -->
+      <div class="tutorial-page" id="page-3">
+        <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
+        <div class="tutorial-text">This is the second image in the example pair. Something in the image has changed.<br>Try to spot the change compared to the previous image. Click Next to continue.</div>
+      </div>
+      
+      <!-- 示例页面4 -->
+      <div class="tutorial-page" id="page-4">
+        <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
+        <div class="tutorial-text">The highlighted area below shows where the change occurred.<br>In the main task, you will be asked to click on the changed area in the second image of each pair. Click Next to continue.</div>
+      </div>
+      
+      <!-- 示例页面5 -->
+      <div class="tutorial-page" id="page-5">
+        <img class="tutorial-image" src="Slide1.jpeg" alt="示例3">
+        <div class="tutorial-text">In the actual task, two images will be shown one after another in each trial. Your task is to click on the area that has changed in the second image.<br>Please try to respond as quickly and accurately as you can. Start the experiment when you are ready.</div>
+      </div>
+      
+      <!-- 导航按钮 -->
+      <div id="tutorial-nav">
+        <button class="nav-button" id="prev-btn" disabled>Previous</button>
+        <div id="dots"></div>
+        <button class="nav-button" id="next-btn">Next</button>
+      </div>
+    </div>
+    
+    <div id="experiment" style="display:none;">
+      <canvas id="canvas" width="600"></canvas>
+      <p id="msg">Preparing ...</p>
+    </div>
+  
+    <div id="end-screen" style="display:none;">
+      ✅ Experiment completed. Thanks for your participation! Redirecting to Prolific...
+    </div>
   </div>
-
-  <div id="end-screen" style="display:none;">
-    ✅ Experiment completed. Thanks for your participation! Redirecting to Prolific...
-  </div>
-
   <script>
     const confirmBtn = document.getElementById("confirm-btn");
     const consentBox = document.getElementById("consent-checkbox");
