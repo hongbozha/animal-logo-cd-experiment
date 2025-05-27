@@ -43,9 +43,10 @@
       display: block;
     }
     .tutorial-image {
-      max-width: 600px;
+      width: 2000px; /* 固定宽度 */
       border: 1px solid #ddd;
-      margin: 20px 0;
+      margin: 20px auto; /* 水平居中 */
+      display: block; /* 确保 margin 生效 */
     }
     .tutorial-text {
       font-size: 20px;
@@ -93,20 +94,20 @@
     
     <!-- 示例页面2 -->
     <div class="tutorial-page" id="page-2">
-      <div class="tutorial-text">This is the first image in the example pair.<br>Something in the image will change.<br>Please pay attention to the details.<br>Click Next to continue.</div>
       <img class="tutorial-image" src="example/example_1.jpg" alt="实验流程">
+      <div class="tutorial-text">This is the first image in the example pair.<br>Something in the image will change.<br>Please pay attention to the details.<br>Click Next to continue.</div>
     </div>
     
     <!-- 示例页面3 -->
     <div class="tutorial-page" id="page-3">
-      <div class="tutorial-text">This is the second image in the example pair.<br>Something in the image has changed.<br>Try to spot the change compared to the previous image.<br>Click Next to continue.</div>
       <img class="tutorial-image" src="example/example_2.jpg" alt="示例1">
+      <div class="tutorial-text">This is the second image in the example pair.<br>Something in the image has changed.<br>Try to spot the change compared to the previous image.<br>Click Next to continue.</div>
     </div>
     
     <!-- 示例页面4 -->
     <div class="tutorial-page" id="page-4">
-      <div class="tutorial-text">The highlighted area below shows where the change occurred.<br>In the main task,<br>you will be asked to click on the changed area in the second image of each pair.<br>Click Next to continue.</div>
       <img class="tutorial-image" src="example/example_3.jpg" alt="示例2">
+      <div class="tutorial-text">The highlighted area below shows where the change occurred.<br>In the main task,<br>you will be asked to click on the changed area in the second image of each pair.<br>Click Next to continue.</div>
     </div>
     
     <!-- 示例页面5 -->
@@ -428,7 +429,7 @@
         const originalHeight = currentImg.height;
 
         // 设置统一的高度
-        const unifiedHeight = 1000;
+        const unifiedHeight = 1200;
         const scale = unifiedHeight / originalHeight;
         const unifiedWidth = originalWidth * scale;
 
