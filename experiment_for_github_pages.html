@@ -153,8 +153,7 @@
       <a href="https://warwick.ac.uk/services/idc/dataprotection/privacynotices/researchprivacynotice" target="_blank">
         University of Warwick Research Privacy Notice
       </a>
-      or by contacting the Legal and Compliance Team at GDPR@warwick.ac.uk.
-    </p>
+      or by contacting the Legal and Compliance Team at GDPR@warwick.ac.uk.</p>
   
     <p>This study has been reviewed and given favourable opinion by the University of Warwick’s Humanities and Social Science Research Ethics Committee (HSSREC).</p>
   
@@ -333,6 +332,12 @@
     let current = 0;
     let currentImg = new Image();
     let startTime = 0;
+    let currentPairNumber = 0;
+    let clickTimer = null;
+    let trialAttempts = 0; // 记录当前图片对的尝试次数
+
+    // 新增：记录当前图片对的开始时间
+    let pairStartTime = 0;
 
     // 示例引导相关变量
     let currentTutorialPage = 1;
@@ -580,6 +585,10 @@
         return;
       }
     
+      trialAttempts = 0; // 重置尝试次数
+      currentPairNumber = current + 1;
+      pairStartTime = performance.now(); // 记录当前图片对的开始时间
+      
       // 显示校准图片
       const calibrationImg = new Image();
       calibrationImg.src = 'Calibration.jpeg';
@@ -591,46 +600,103 @@
         ctx.drawImage(calibrationImg, 0, 0, 960, 720);
     
         setTimeout(() => {
-          const [imgA, imgB] = imagePairs[current];
-          const pairNumber = current + 1;
-          currentImg = new Image();
-    
-          currentImg.onload = () => {
-            const originalWidth = currentImg.width;
-            const originalHeight = currentImg.height;
-            canvas.width = 960;
-            canvas.height = 720;
-            ctx.drawImage(currentImg, 0, 0, 960, 720);
-            msg.innerText = `pair${pairNumber}-1`;
-    
-            setTimeout(() => {
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              msg.innerText = "Loading...";
-              setTimeout(() => {
-                const secondImg = new Image();
-                secondImg.onload = () => {
-                  ctx.drawImage(secondImg, 0, 0, 960, 720);
-                  msg.innerText = `pair${pairNumber}-2`;
-                  startTime = performance.now();
-                  canvas.onclick = recordClick;
-                };
-                secondImg.src = imgB;
-              }, 200);
-            }, 1500);
-          };
-    
-          currentImg.src = imgA;
+          showFirstImage();
         }, 500);
       };
     
       calibrationImg.onerror = () => {
         console.error("Calibration image failed to load. Skipping...");
         // 直接加载实验图片对
-        loadExperimentImagePair();
+        showFirstImage();
       };
     }
+    
+    // 显示第一张图片
+    function showFirstImage() {
+      const [imgA, imgB] = imagePairs[current];
+      currentImg = new Image();
+    
+      currentImg.onload = () => {
+        const originalWidth = currentImg.width;
+        const originalHeight = currentImg.height;
+        canvas.width = 960;
+        canvas.height = 720;
+        ctx.drawImage(currentImg, 0, 0, 960, 720);
+        msg.innerText = `pair${currentPairNumber}-1 (attempt ${trialAttempts+1})`;
+        
+        setTimeout(() => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          msg.innerText = "Loading...";
+          setTimeout(() => {
+            showSecondImage(imgB);
+          }, 200);
+        }, 250);
+      };
+    
+      currentImg.src = imgA;
+    }
+    
+    // 显示第二张图片
+    function showSecondImage(imgB) {
+      const secondImg = new Image();
+      secondImg.onload = () => {
+        ctx.drawImage(secondImg, 0, 0, 960, 720);
+        msg.innerText = `pair${currentPairNumber}-2 (attempt ${trialAttempts+1})`;
+        
+        // 使用全局的pairStartTime计算总反应时间
+        startTime = pairStartTime;
+        
+        // 设置点击计时器
+        canvas.onclick = recordClick;
+        clickTimer = setTimeout(() => {
+          canvas.onclick = null; // 禁用点击
+          repeatTrial();
+        }, 250);
+      };
+      secondImg.src = imgB;
+    }
+    
+    // 修改repeatTrial函数，将校准图片替换为空白画布
+    function repeatTrial() {
+      trialAttempts++;
+      
+      // 显示空白画布（替代校准图片）
+      ctx.fillStyle = "#d3d3d3"; // 浅灰色背景
+      ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充灰色背景
+      msg.innerText = "Loading..."; // 可选：显示加载状态或空白
+      
+      setTimeout(() => {
+        showFirstImage(); // 直接显示第一张图片，中间间隔改为空白
+      }, 250); // 保持250ms的空白间隔
+    }
 
-    function recordClick(e) {      
+    // 修改showSecondImage中的计时器时间（根据需求调整）
+    function showSecondImage(imgB) {
+      const secondImg = new Image();
+      secondImg.onload = () => {
+        ctx.drawImage(secondImg, 0, 0, 960, 720);
+        msg.innerText = `pair${currentPairNumber}-2 (attempt ${trialAttempts+1})`;
+        
+        // 使用全局的pairStartTime计算总反应时间
+        startTime = pairStartTime;
+        
+        // 设置点击计时器
+        canvas.onclick = recordClick;
+        clickTimer = setTimeout(() => {
+          canvas.onclick = null; // 禁用点击
+          repeatTrial();
+        }, 250);
+      };
+      secondImg.src = imgB;
+    }
+
+    function recordClick(e) {
+      // 清除计时器
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+      }
+      
       const rect = canvas.getBoundingClientRect();
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
@@ -658,10 +724,22 @@
         timeMs: elapsed,
         imageA: imagePairs[current][0],
         imageB: imagePairs[current][1],
+        attempts: trialAttempts + 1, // 记录尝试次数
         // 添加参与者元信息
         referrer: participantInfo.referrer,
         queryParams: participantInfo.queryParams
       };
+
+      // 控制台打印点击信息
+      console.log("-------------------------");
+      console.log("点击事件记录", {
+        实验编号: pairIndex,
+        点击坐标: `X: ${x}, Y: ${y}`,
+        反应时间: `${elapsed} ms`,
+        尝试次数: payload.attempts,
+        图片对: `${payload.imageA} vs ${payload.imageB}`
+      });
+      console.log("-------------------------");
 
       console.log("Sending payload:", payload);
       
