@@ -333,12 +333,12 @@
     let currentImg = new Image();
     let startTime = 0;
     let currentPairNumber = 0;
-    let clickTimer = null;
     let trialAttempts = 0; // 记录当前图片对的尝试次数
-
-    // 新增：记录当前图片对的开始时间
-    let pairStartTime = 0;
-
+    let currentDisplayPhase = 0; // 0: calibration, 1: first image, 2: gray, 3: second image, 4: gray
+    let pairStartTime = 0; // 记录当前图片对的开始时间
+    let currentImageType = ''; // 记录当前显示的图片类型
+    let currentTimer = null; // 统一管理当前的定时器
+    
     // 示例引导相关变量
     let currentTutorialPage = 1;
     const totalTutorialPages = 5;
@@ -573,9 +573,14 @@
       nextImage();
     }
 
-    //preloadImages();
-
+    // 显示下一组图片
     function nextImage() {
+      // 清除任何现有的定时器
+      if (currentTimer) {
+        clearTimeout(currentTimer);
+        currentTimer = null;
+      }
+      
       if (current >= imagePairs.length) {
         document.getElementById('experiment').style.display = 'none';
         endScreen.style.display = 'block';
@@ -587,26 +592,34 @@
     
       trialAttempts = 0; // 重置尝试次数
       currentPairNumber = current + 1;
+      currentDisplayPhase = 0; // 重置显示阶段
       pairStartTime = performance.now(); // 记录当前图片对的开始时间
       
       // 显示校准图片
+      showCalibration();
+    }
+    
+    // 显示校准图片
+    function showCalibration() {
       const calibrationImg = new Image();
       calibrationImg.src = 'Calibration.jpeg';
       calibrationImg.onload = () => {
-        const originalWidth = calibrationImg.width;
-        const originalHeight = calibrationImg.height;
         canvas.width = 960;
         canvas.height = 720;
         ctx.drawImage(calibrationImg, 0, 0, 960, 720);
-    
-        setTimeout(() => {
+        msg.innerText = `pair${currentPairNumber} calibration`;
+        
+        // 250ms后显示第一张图片
+        currentTimer = setTimeout(() => {
+          currentDisplayPhase = 1;
           showFirstImage();
-        }, 500);
+        }, 250);
       };
-    
+      
       calibrationImg.onerror = () => {
         console.error("Calibration image failed to load. Skipping...");
-        // 直接加载实验图片对
+        // 直接加载第一张图片
+        currentDisplayPhase = 1;
         showFirstImage();
       };
     }
@@ -617,103 +630,94 @@
       currentImg = new Image();
     
       currentImg.onload = () => {
-        const originalWidth = currentImg.width;
-        const originalHeight = currentImg.height;
-        canvas.width = 960;
-        canvas.height = 720;
         ctx.drawImage(currentImg, 0, 0, 960, 720);
         msg.innerText = `pair${currentPairNumber}-1 (attempt ${trialAttempts+1})`;
         
-        setTimeout(() => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          msg.innerText = "Loading...";
-          setTimeout(() => {
-            showSecondImage(imgB);
-          }, 200);
+        currentImageType = 'first'; // 标记为第一张图片
+        canvas.onclick = recordClick; // 绑定点击事件
+        
+        // 250ms后显示灰色背景
+        currentTimer = setTimeout(() => {
+          currentDisplayPhase = 2;
+          showGrayScreen();
         }, 250);
       };
     
       currentImg.src = imgA;
     }
     
+    // 显示灰色背景
+    function showGrayScreen() {
+      canvas.onclick = null; // 灰色背景时不响应点击
+      ctx.fillStyle = "#d3d3d3"; // 浅灰色背景
+      ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充灰色背景
+      
+      if (currentDisplayPhase === 2) {
+        msg.innerText = `pair${currentPairNumber}-gray between 1 and 2`;
+        // 250ms后显示第二张图片
+        currentTimer = setTimeout(() => {
+          currentDisplayPhase = 3;
+          showSecondImage();
+        }, 250);
+      } else if (currentDisplayPhase === 4) {
+        msg.innerText = `pair${currentPairNumber}-gray between 2 and 1`;
+        // 250ms后显示第一张图片
+        currentTimer = setTimeout(() => {
+          currentDisplayPhase = 1;
+          showFirstImage();
+        }, 250);
+      }
+    }
+    
     // 显示第二张图片
-    function showSecondImage(imgB) {
+    function showSecondImage() {
+      const [, imgB] = imagePairs[current];
       const secondImg = new Image();
+    
       secondImg.onload = () => {
         ctx.drawImage(secondImg, 0, 0, 960, 720);
         msg.innerText = `pair${currentPairNumber}-2 (attempt ${trialAttempts+1})`;
         
-        // 使用全局的pairStartTime计算总反应时间
-        startTime = pairStartTime;
+        currentImageType = 'second'; // 标记为第二张图片
+        canvas.onclick = recordClick; // 绑定点击事件
         
-        // 设置点击计时器
-        canvas.onclick = recordClick;
-        clickTimer = setTimeout(() => {
-          canvas.onclick = null; // 禁用点击
-          repeatTrial();
+        // 250ms后显示灰色背景
+        currentTimer = setTimeout(() => {
+          currentDisplayPhase = 4;
+          showGrayScreen();
         }, 250);
       };
+    
       secondImg.src = imgB;
     }
     
-    // 修改repeatTrial函数，将校准图片替换为空白画布
-    function repeatTrial() {
-      trialAttempts++;
-      
-      // 显示空白画布（替代校准图片）
-      ctx.fillStyle = "#d3d3d3"; // 浅灰色背景
-      ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充灰色背景
-      msg.innerText = "Loading..."; // 可选：显示加载状态或空白
-      
-      setTimeout(() => {
-        showFirstImage(); // 直接显示第一张图片，中间间隔改为空白
-      }, 250); // 保持250ms的空白间隔
-    }
-
-    // 修改showSecondImage中的计时器时间（根据需求调整）
-    function showSecondImage(imgB) {
-      const secondImg = new Image();
-      secondImg.onload = () => {
-        ctx.drawImage(secondImg, 0, 0, 960, 720);
-        msg.innerText = `pair${currentPairNumber}-2 (attempt ${trialAttempts+1})`;
-        
-        // 使用全局的pairStartTime计算总反应时间
-        startTime = pairStartTime;
-        
-        // 设置点击计时器
-        canvas.onclick = recordClick;
-        clickTimer = setTimeout(() => {
-          canvas.onclick = null; // 禁用点击
-          repeatTrial();
-        }, 250);
-      };
-      secondImg.src = imgB;
-    }
-
+    // 记录点击事件
     function recordClick(e) {
-      // 清除计时器
-      if (clickTimer) {
-        clearTimeout(clickTimer);
-        clickTimer = null;
+      // 清除当前的定时器
+      if (currentTimer) {
+        clearTimeout(currentTimer);
+        currentTimer = null;
       }
       
       const rect = canvas.getBoundingClientRect();
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
-      const elapsed = Math.round(performance.now() - startTime);
+      const elapsed = Math.round(performance.now() - pairStartTime); // 总反应时间
 
+      // 绘制红点
       ctx.fillStyle = "red";
       ctx.beginPath();
       ctx.arc(x, y, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      const imageData = canvas.toDataURL("image/png");
+      // 生成文件名和时间戳
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const pairIndex = current + 1;
-      const fileName = `${userId}_pair${pairIndex}_${timestamp}.png`;
+      const fileName = `${userId}_pair${pairIndex}_${timestamp}_${currentImageType}.png`; // 区分图片类型
 
+      // 组装数据
       const payload = {
-        imageData,
+        imageData: canvas.toDataURL("image/png"),
         fileName,
         userId,
         experimentId: pairIndex,
@@ -724,16 +728,17 @@
         timeMs: elapsed,
         imageA: imagePairs[current][0],
         imageB: imagePairs[current][1],
-        attempts: trialAttempts + 1, // 记录尝试次数
-        // 添加参与者元信息
+        attempts: trialAttempts + 1,
+        imageType: currentImageType, // 记录点击的是第一张还是第二张图片
         referrer: participantInfo.referrer,
         queryParams: participantInfo.queryParams
       };
 
-      // 控制台打印点击信息
+      // 控制台打印和上传
       console.log("-------------------------");
       console.log("点击事件记录", {
         实验编号: pairIndex,
+        图片类型: currentImageType,
         点击坐标: `X: ${x}, Y: ${y}`,
         反应时间: `${elapsed} ms`,
         尝试次数: payload.attempts,
@@ -741,8 +746,6 @@
       });
       console.log("-------------------------");
 
-      console.log("Sending payload:", payload);
-      
       fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
         method: "POST",
         body: JSON.stringify(payload)
@@ -750,6 +753,7 @@
         console.warn("Uploading failed (silent)", err);
       });
 
+      // 无论点击第一张还是第二张图片，都直接进入下一对
       canvas.onclick = null;
       current++;
       setTimeout(nextImage, 500);
