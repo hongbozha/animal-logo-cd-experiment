@@ -609,11 +609,11 @@
         ctx.drawImage(calibrationImg, 0, 0, 960, 720);
         msg.innerText = `pair${currentPairNumber} calibration`;
         
-        // 250ms后显示第一张图片
+        // 校准500ms后显示第一张图片
         currentTimer = setTimeout(() => {
           currentDisplayPhase = 1;
           showFirstImage();
-        }, 250);
+        }, 500);
       };
       
       calibrationImg.onerror = () => {
@@ -636,11 +636,11 @@
         currentImageType = 'first'; // 标记为第一张图片
         canvas.onclick = recordClick; // 绑定点击事件
         
-        // 250ms后显示灰色背景
+        // 第一张图展示500ms然后显示灰色背景
         currentTimer = setTimeout(() => {
           currentDisplayPhase = 2;
           showGrayScreen();
-        }, 250);
+        }, 500);
       };
     
       currentImg.src = imgA;
@@ -654,18 +654,18 @@
       
       if (currentDisplayPhase === 2) {
         msg.innerText = `pair${currentPairNumber}-gray between 1 and 2`;
-        // 250ms后显示第二张图片
+        // 间隔灰屏展示100ms后显示第二张图片
         currentTimer = setTimeout(() => {
           currentDisplayPhase = 3;
           showSecondImage();
-        }, 250);
+        }, 100);
       } else if (currentDisplayPhase === 4) {
         msg.innerText = `pair${currentPairNumber}-gray between 2 and 1`;
-        // 250ms后显示第一张图片
+        // 间隔灰屏展示100ms后显示第一张图片
         currentTimer = setTimeout(() => {
           currentDisplayPhase = 1;
           showFirstImage();
-        }, 250);
+        }, 100);
       }
     }
     
@@ -681,11 +681,11 @@
         currentImageType = 'second'; // 标记为第二张图片
         canvas.onclick = recordClick; // 绑定点击事件
         
-        // 250ms后显示灰色背景
+        // 第二张图展示500ms后显示灰色背景
         currentTimer = setTimeout(() => {
           currentDisplayPhase = 4;
           showGrayScreen();
-        }, 250);
+        }, 500);
       };
     
       secondImg.src = imgB;
