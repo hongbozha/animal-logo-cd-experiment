@@ -31,16 +31,15 @@
       display: block;
       margin-top: 10px;
     }
-    /* 按钮样式修改 */
     .button-group {
       display: flex;
-      flex-direction: column; /* 垂直排列按钮 */
-      gap: 10px; /* 按钮间距 */
+      flex-direction: column;
+      gap: 10px;
       max-width: 3000px;
-      margin: 20px auto; /* 居中显示 */
+      margin: 20px auto;
     }
     .button-group button {
-      width: 1000px; /* 固定宽度 */
+      width: 1000px;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
@@ -55,11 +54,7 @@
       background-color: #ff4444;
       color: white;
     }
-    #loading, #msg, #end-screen {
-      max-width: 4000px;
-      margin: 0 auto;
-    }
-    #loading, #msg, #end-screen {
+    #loading, #msg, #end-screen, #uploading, #upload-error {
       max-width: 4000px;
       margin: 0 auto;
     }
@@ -79,7 +74,6 @@
       font-size: 30px;
       margin-top: 30px;
     }
-    /* 新增示例引导样式 */
     #tutorial {
       display: none;
       max-width: 4000px;
@@ -92,16 +86,16 @@
       display: block;
     }
     .tutorial-image_extra {
-      width: 960px; /* 固定宽度 */
+      width: 960px;
       border: 2px solid #333;
-      margin: 0 auto; /* 图片水平居中 */
-      display: block; /* 确保 margin 生效 */
+      margin: 0 auto;
+      display: block;
     }
     .tutorial-image {
-      width: 960px; /* 固定宽度 */
+      width: 960px;
       border: 0px solid #ddd;
-      margin: 0 auto; /* 图片水平居中 */
-      display: block; /* 确保 margin 生效 */
+      margin: 0 auto;
+      display: block;
     }
     .tutorial-text {
       font-size: 20px;
@@ -132,6 +126,27 @@
     }
     .dot.active {
       background-color: #4CAF50;
+    }
+    #uploading {
+      font-size: 24px;
+      color: #333;
+      margin-top: 30px;
+      display: none;
+    }
+    #upload-error {
+      font-size: 20px;
+      color: red;
+      margin-top: 20px;
+      display: none;
+    }
+    #retry-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -246,58 +261,61 @@
     <div id="end-screen" style="display:none;">
       ✅ Experiment completed. Thanks for your participation! Redirecting to Prolific...
     </div>
+    <div id="uploading">⌛ Waiting for data upload...</div>
+    <div id="upload-error">
+      ❌ Data upload failed. Please check your internet connection and try again.
+      <button id="retry-btn">Retry Upload</button>
+    </div>
   </div>
   <script>
-  // 获取免责声明容器（新增关键行）
-  const consentContainer = document.getElementById("consent-container");
-  
-  const confirmBtn = document.getElementById("confirm-btn");
-  const declineBtn = document.getElementById("decline-btn");
-  const mainContent = document.getElementById("main-content");
-  let timeoutHandle = setTimeout(() => {
-    if (!confirmClicked && !declineClicked) {
-      window.location.href = "about:blank";
-    }
-  }, 5 * 60 * 1000); // 5分钟倒计时
-
-  let confirmClicked = false;
-  let declineClicked = false;
-
-  // 同意按钮逻辑（已修正）
-  confirmBtn.addEventListener("click", () => {
-    confirmClicked = true;
-    clearTimeout(timeoutHandle); // 清除倒计时
+    // 获取免责声明容器
+    const consentContainer = document.getElementById("consent-container");
     
-    // 隐藏免责声明容器（确保变量已定义）
-    if (consentContainer) {
-      consentContainer.style.display = "none";
-    } else {
-      console.error("Error: consentContainer not found");
-    }
-    
-    mainContent.style.display = "block";
-    preloadImages(); // 开始加载实验
-  });
-
-  // 拒绝按钮逻辑（可选：确保容器隐藏逻辑一致）
-  declineBtn.addEventListener("click", () => {
-    if (!declineClicked) {
-      declineClicked = true;
-      clearTimeout(timeoutHandle);
-      if (confirm("Are you sure you want to decline participation? This will close the experiment.")) {
-        if (consentContainer) {
-          consentContainer.style.display = "none"; // 可选：隐藏容器
-        }
+    const confirmBtn = document.getElementById("confirm-btn");
+    const declineBtn = document.getElementById("decline-btn");
+    const mainContent = document.getElementById("main-content");
+    let timeoutHandle = setTimeout(() => {
+      if (!confirmClicked && !declineClicked) {
         window.location.href = "about:blank";
       }
-    }
-  });
+    }, 5 * 60 * 1000); // 5分钟倒计时
 
-    // 确认弹窗函数
-    function confirmDialog() {
-      return confirm("Are you sure you want to decline participation? This will close the experiment.");
-    }
-        
+    let confirmClicked = false;
+    let declineClicked = false;
+
+    // 新增全局变量：记录所有失败的上传请求
+    const failedPayloads = [];
+    const MAX_RETRIES = 3; // 最大重试次数
+    
+    // 同意按钮逻辑
+    confirmBtn.addEventListener("click", () => {
+      confirmClicked = true;
+      clearTimeout(timeoutHandle);
+      
+      if (consentContainer) {
+        consentContainer.style.display = "none";
+      } else {
+        console.error("Error: consentContainer not found");
+      }
+      
+      mainContent.style.display = "block";
+      preloadImages();
+    });
+
+    // 拒绝按钮逻辑
+    declineBtn.addEventListener("click", () => {
+      if (!declineClicked) {
+        declineClicked = true;
+        clearTimeout(timeoutHandle);
+        if (confirm("Are you sure you want to decline participation? This will close the experiment.")) {
+          if (consentContainer) {
+            consentContainer.style.display = "none";
+          }
+          window.location.href = "about:blank";
+        }
+      }
+    });
+
     // 获取 URL 参数
     function getQueryParams() {
       const params = {};
@@ -312,17 +330,17 @@
       return params;
     }
     
-    // 获取所有 URL 参数（包括 Prolific 参数和其他）
+    // 获取所有 URL 参数
     const queryParams = getQueryParams();
     const referrer = document.referrer || "direct";
     
-    // 自动记录所有查询参数（不只是 Prolific 的特定参数）
+    // 记录所有查询参数
     const participantInfo = {
       referrer: referrer,
-      queryParams: JSON.stringify(queryParams) // 把整个 queryParams 对象转为字符串
+      queryParams: JSON.stringify(queryParams)
     };
     
-    console.log(participantInfo);  // 可查看提取的所有参数
+    console.log(participantInfo);
     
     const userId = "user_" + Math.random().toString(36).substr(2, 8);
     let imagePairs = [];
@@ -339,11 +357,12 @@
     let currentImg = new Image();
     let startTime = 0;
     let currentPairNumber = 0;
-    let displayAttempts = 0; // 记录当前图片对的展示次数
-    let currentDisplayPhase = 0; // 0: calibration, 1: first image, 2: gray, 3: second image, 4: gray
-    let pairStartTime = 0; // 记录当前图片对的开始时间
-    let currentImageType = ''; // 记录当前显示的图片类型
-    let currentTimer = null; // 统一管理当前的定时器
+    let displayAttempts = 0;
+    let currentDisplayPhase = 0;
+    let pairStartTime = 0;
+    let currentImageType = '';
+    let currentTimer = null;
+    let isLastPair = false;
     
     // 每对图片的最大交替次数
     const MAX_DISPLAYS = 30;
@@ -352,8 +371,11 @@
     let currentTutorialPage = 1;
     const totalTutorialPages = 5;
     
+    // 上传相关变量
+    const uploadErrorEl = document.getElementById('upload-error');
+    const retryBtn = document.getElementById('retry-btn');
+    
     async function preloadImages() {
-      // const categories = ["ec", "sm", "st"];
       const categories = ["st"];
       const selectedPairs = [];
     
@@ -362,29 +384,22 @@
         const res = await fetch(`img_${folder}/image_list.json`);
         const files = await res.json();
     
-        // 按 prefix 分组（例如 a1, a2...）
+        // 按 prefix 分组
         const groups = {};
         files.forEach(filename => {
           const prefix = filename.split('.')[0].split('_')[0];
           if (!groups[prefix]) groups[prefix] = [];
           groups[prefix].push(filename);
         });
-        // ✅ 打印每组的前缀和内容
-        console.log(`===== ${folder} 文件夹中的分组结果 =====`);
-        for (const prefix in groups) {
-          console.log(`组前缀：${prefix}`);
-          console.log(`包含文件：`, groups[prefix]);
-        }
+        
         // 从每组中提取图像对
         const pairs = [];
         for (const prefix in groups) {
           const group = groups[prefix];
           if (group.length < 2) continue;
 
-          // ✅ 优先选取不含下划线的文件作为 baseImage
           let baseImage = group.find(name => !name.includes('_'));
       
-          // 如果没有无下划线的，选名字最短的作为兜底方案
           if (!baseImage) {
             baseImage = group.reduce((shortest, current) => {
               return current.length < shortest.length ? current : shortest;
@@ -396,7 +411,6 @@
           pairs.push([`img_${folder}/${otherImage}`, `img_${folder}/${baseImage}`]);
         }
     
-        // 从该类中随机选出N组
         return getRandomItems(pairs, 10);
       }
     
@@ -431,35 +445,22 @@
       
       // 预加载所有图像并显示进度
       let loaded = 0;
-      const total = imagePairs.length * 2; // 每对图像包含两个文件
+      const total = imagePairs.length * 2 + tutorialImages.length;
       const preloadPromises = [];
     
-      imagePairs.flat().forEach(src => {
+      [...imagePairs.flat(), ...tutorialImages].forEach(src => {
         const img = new Image();
         const p = new Promise(resolve => {
           img.onload = () => {
             loaded++;
-            progressEl.textContent = Math.round((loaded / (total+tutorialImages.length) ) * 100) + "%";
+            progressEl.textContent = Math.round((loaded / total) * 100) + "%";
             resolve();
           };
           img.onerror = resolve;
           img.src = src;
-          allPreloadedImages.push(img);
-        });
-        preloadPromises.push(p);
-      });
-
-      // 预加载示例图片的进度条
-      tutorialImages.forEach(src => {
-        const img = new Image();
-        const p = new Promise(resolve => {
-          img.onload = () => {
-            loaded++;
-            progressEl.textContent = Math.round((loaded / (total + tutorialImages.length)) * 100) + "%";
-            resolve();
-          };
-          img.onerror = resolve;
-          img.src = src;
+          if (!tutorialImages.includes(src)) {
+            allPreloadedImages.push(img);
+          }
         });
         preloadPromises.push(p);
       });
@@ -468,7 +469,6 @@
       imagesReady = true;
       loadingEl.style.display = "none";
       
-      // 修改：加载完成后更新状态消息，提示用户点击开始
       statusEl.textContent = "Loading finished. Click anywhere to start the tutorial.";
       statusEl.style.cursor = "pointer";
       
@@ -488,7 +488,7 @@
     function initTutorial() {
       const tutorial = document.getElementById('tutorial');
       tutorial.style.display = 'block';
-      statusEl.style.display = 'none'; // 隐藏状态消息，开始教程
+      statusEl.style.display = 'none';
       
       // 创建导航点
       const dotsContainer = document.getElementById('dots');
@@ -501,8 +501,6 @@
       
       // 设置导航按钮事件
       document.getElementById('prev-btn').addEventListener('click', showPrevPage);
-      
-      // 修复：只绑定一次事件，避免重复绑定
       document.getElementById('next-btn').addEventListener('click', function() {
         if (currentTutorialPage === totalTutorialPages) {
           startExperiment();
@@ -511,7 +509,7 @@
         }
       });
       
-      updateTutorialButtons(); // 初始化按钮状态
+      updateTutorialButtons();
     }
 
     // 显示上一页
@@ -526,30 +524,11 @@
 
     // 显示下一页
     function showNextPage() {
-      console.log(`尝试显示下一页：当前页=${currentTutorialPage}, 总页数=${totalTutorialPages}`);
-      
       if (currentTutorialPage < totalTutorialPages) {
-        const currentPage = document.getElementById(`page-${currentTutorialPage}`);
-        if (currentPage) {
-          currentPage.classList.remove('active');
-        } else {
-          console.error(`当前页面 page-${currentTutorialPage} 不存在`);
-          return;
-        }
-        
-        // 切换到下一页
+        document.getElementById(`page-${currentTutorialPage}`).classList.remove('active');
         currentTutorialPage++;
-        console.log(`更新后的当前页编号：${currentTutorialPage}`);
-        
-        const nextPage = document.getElementById(`page-${currentTutorialPage}`);
-        if (nextPage) {
-          nextPage.classList.add('active');
-          updateTutorialButtons();
-        } else {
-          console.error(`页面 page-${currentTutorialPage} 不存在`);
-        }
-      } else {
-        console.error(`当前页已超过总页数：${currentTutorialPage}`);
+        document.getElementById(`page-${currentTutorialPage}`).classList.add('active');
+        updateTutorialButtons();
       }
     }
   
@@ -560,7 +539,6 @@
       
       prevBtn.disabled = currentTutorialPage === 1;
       
-      // 修复：只更新按钮文本，不重新绑定事件
       if (currentTutorialPage === totalTutorialPages) {
         nextBtn.textContent = 'Start the experiment';
       } else {
@@ -571,8 +549,6 @@
       dots.forEach((dot, index) => {
         dot.classList.toggle('active', index + 1 === currentTutorialPage);
       });
-      
-      console.log(`更新按钮状态：当前页=${currentTutorialPage}, 按钮文本=${nextBtn.textContent}`);
     }
 
     // 开始正式实验
@@ -591,25 +567,23 @@
       }
       
       if (current >= imagePairs.length) {
-        document.getElementById('experiment').style.display = 'none';
-        endScreen.style.display = 'block';
-        setTimeout(() => {
-          window.location.href = "https://app.prolific.com/submissions/complete?cc=C1OH8WG7";
-        }, 1000);
+        // 所有图片对处理完毕，检查上传状态
+        checkAllUploads();
         return;
       }
     
-      displayAttempts = 0; // 重置展示次数
+      displayAttempts = 0;
       currentPairNumber = current + 1;
-      currentDisplayPhase = 0; // 重置显示阶段
-      pairStartTime = performance.now(); // 记录当前图片对的开始时间
+      currentDisplayPhase = 0;
+      pairStartTime = performance.now();
       
-    // 新增：输出当前pair的图片名称
-    const [imgA, imgB] = imagePairs[current];
-    console.log(`----- 开始处理第 ${currentPairNumber} 对图片 -----`);
-    console.log(`图片A: ${imgA}`);
-    console.log(`图片B: ${imgB}`);
-    console.log('-------------------------');
+      isLastPair = (current === imagePairs.length - 1);
+      
+      const [imgA, imgB] = imagePairs[current];
+      console.log(`----- 开始处理第 ${currentPairNumber} 对图片 -----`);
+      console.log(`图片A: ${imgA}`);
+      console.log(`图片B: ${imgB}`);
+      console.log('-------------------------');
 
       // 显示校准图片
       showCalibration();
@@ -649,8 +623,8 @@
         ctx.drawImage(currentImg, 0, 0, 960, 720);
         msg.innerText = `pair${currentPairNumber}-1 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         
-        currentImageType = 'first'; // 标记为第一张图片
-        canvas.onclick = recordClick; // 绑定点击事件
+        currentImageType = 'first';
+        canvas.onclick = recordClick;
         
         // 第一张图展示500ms然后显示灰色背景
         currentTimer = setTimeout(() => {
@@ -664,9 +638,9 @@
     
     // 显示灰色背景
     function showGrayScreen() {
-      canvas.onclick = recordClick; // 灰色背景时也响应点击
-      ctx.fillStyle = "#d3d3d3"; // 浅灰色背景
-      ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充灰色背景
+      canvas.onclick = recordClick;
+      ctx.fillStyle = "#d3d3d3";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       if (currentDisplayPhase === 2) {
         msg.innerText = `pair${currentPairNumber}-gray between 1 and 2 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
@@ -679,7 +653,7 @@
         msg.innerText = `pair${currentPairNumber}-gray between 2 and 1 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         // 间隔灰屏展示100ms后显示第一张图片
         currentTimer = setTimeout(() => {
-          displayAttempts++; // 每次完整交替后增加展示次数
+          displayAttempts++;
           if (displayAttempts >= MAX_DISPLAYS) {
             // 达到最大展示次数，处理未点击情况
             handleNoClick();
@@ -701,8 +675,8 @@
         ctx.drawImage(secondImg, 0, 0, 960, 720);
         msg.innerText = `pair${currentPairNumber}-2 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         
-        currentImageType = 'second'; // 标记为第二张图片
-        canvas.onclick = recordClick; // 绑定点击事件
+        currentImageType = 'second';
+        canvas.onclick = recordClick;
         
         // 第二张图展示500ms后显示灰色背景
         currentTimer = setTimeout(() => {
@@ -714,11 +688,38 @@
       secondImg.src = imgB;
     }
     
+    // 带重试机制的上传函数
+    function uploadData(payload) {
+      payload.retryCount = payload.retryCount || 0; // 初始化重试计数
+      
+      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("Upload failed");
+        console.log(`Data uploaded successfully for pair ${payload.pairIndex}`);
+      })
+      .catch(error => {
+        console.error(`Upload failed for pair ${payload.pairIndex}:`, error);
+        payload.retryCount++;
+        
+        // 指数退避重试策略
+        if (payload.retryCount < MAX_RETRIES) {
+          const delay = 2000 * Math.pow(2, payload.retryCount); // 2s, 4s, 8s
+          console.log(`Retrying upload in ${delay/1000} seconds...`);
+          setTimeout(() => uploadData(payload), delay);
+        } else {
+          console.error(`Permanent failure for pair ${payload.pairIndex}`);
+          failedPayloads.push(payload); // 记录永久失败的请求
+        }
+      });
+    }
+    
     // 处理未点击情况
     function handleNoClick() {
       console.log(`Pair ${currentPairNumber} reached ${MAX_DISPLAYS} displays without click, proceeding...`);
       
-      // 生成未点击的数据
       const payload = {
         imageData: null,
         fileName: null,
@@ -726,29 +727,22 @@
         experimentId: current + 1,
         pairIndex: current + 1,
         timestamp: new Date().toLocaleString(),
-        clickedX: null,
-        clickedY: null,
+        clickedX: 0,
+        clickedY: 0,
         timeMs: Math.round(performance.now() - pairStartTime),
         imageA: imagePairs[current][0],
         imageB: imagePairs[current][1],
         attempts: displayAttempts,
-        imageType: null,
+        imageType: "third",
         referrer: participantInfo.referrer,
         queryParams: participantInfo.queryParams
       };
 
-      // 上传数据
-      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      }).catch((err) => {
-        console.warn("Uploading failed (silent)", err);
-      });
-
-      // 进入下一对图片
-      canvas.onclick = null;
-      current++;
-      setTimeout(nextImage, 500);
+      // 非阻塞上传，不等待结果
+      uploadData(payload);
+      
+      // 直接进入下一个Pair，不等待上传结果
+      handlePostUpload();
     }
     
     // 记录点击事件
@@ -762,7 +756,7 @@
       const rect = canvas.getBoundingClientRect();
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
-      const elapsed = Math.round(performance.now() - pairStartTime); // 总反应时间
+      const elapsed = Math.round(performance.now() - pairStartTime);
       
       // 判断是否点击在灰色背景上
       const isGrayBackground = currentDisplayPhase === 2 || currentDisplayPhase === 4;
@@ -779,12 +773,12 @@
       // 生成文件名和时间戳
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const pairIndex = current + 1;
-      const fileName = `${userId}_pair${pairIndex}_${timestamp}_${currentImageType}.png`; // 区分图片类型
+      const fileName = `${userId}_pair${pairIndex}_${timestamp}_${currentImageType}.png`;
 
       // 组装数据
       const payload = {
-        imageData: isGrayBackground ? null : canvas.toDataURL("image/png"), // 灰色背景不发送图片
-        fileName: isGrayBackground ? null : fileName, // 灰色背景不发送文件名
+        imageData: isGrayBackground ? null : canvas.toDataURL("image/png"),
+        fileName: isGrayBackground ? null : fileName,
         userId,
         experimentId: pairIndex,
         pairIndex,
@@ -798,10 +792,10 @@
         imageType: currentImageType,
         referrer: participantInfo.referrer,
         queryParams: participantInfo.queryParams,
-        clickedOnGray: isGrayBackground // 新增字段，标记是否点击在灰色背景上
+        clickedOnGray: isGrayBackground
       };
 
-      // 控制台打印和上传
+      // 控制台打印
       console.log("-------------------------");
       console.log("点击事件记录", {
         实验编号: pairIndex,
@@ -814,17 +808,85 @@
       });
       console.log("-------------------------");
 
-      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      }).catch((err) => {
-        console.warn("Uploading failed (silent)", err);
-      });
-
-      // 无论点击第一张还是第二张图片，都直接进入下一对
+      // 非阻塞上传，不等待结果
+      uploadData(payload);
+      
+      // 直接进入下一个Pair，不等待上传结果
+      handlePostUpload();
+    }
+    
+    // 处理上传后的步骤
+    function handlePostUpload() {
       canvas.onclick = null;
       current++;
-      setTimeout(nextImage, 500);
+      
+      // 无论上传是否成功，直接进入下一个Pair（最后一个Pair除外）
+      if (current < imagePairs.length) {
+        setTimeout(nextImage, 500);
+      } else {
+        // 所有图片对处理完毕，检查上传状态
+        checkAllUploads();
+      }
+    }
+    
+    // 检查所有上传状态
+    function checkAllUploads() {
+      // 显示等待上传状态
+      document.getElementById('experiment').style.display = 'none';
+      document.getElementById('uploading').style.display = 'block';
+      
+      // 延迟检查，给上传请求一些时间
+      setTimeout(() => {
+        document.getElementById('uploading').style.display = 'none';
+        
+        if (failedPayloads.length > 0) {
+          showUploadFailureScreen();
+        } else {
+          showSuccessScreenAndRedirect();
+        }
+      }, 3000); // 等待3秒，让上传请求有机会完成
+    }
+    
+    // 显示上传失败界面
+    function showUploadFailureScreen() {
+      const uploadError = document.getElementById('upload-error');
+      uploadError.style.display = 'block';
+      
+      // 重试按钮点击事件：重新上传所有失败的请求
+      document.getElementById('retry-btn').addEventListener('click', () => {
+        uploadError.style.display = 'none';
+        document.getElementById('uploading').style.display = 'block';
+        
+        // 复制失败列表并清空原列表
+        const retries = [...failedPayloads];
+        failedPayloads.length = 0;
+        
+        // 重新上传所有失败的请求
+        retries.forEach(payload => {
+          payload.retryCount = 0; // 重置重试计数
+          uploadData(payload);
+        });
+        
+        // 再次检查上传状态
+        setTimeout(() => {
+          document.getElementById('uploading').style.display = 'none';
+          if (failedPayloads.length > 0) {
+            showUploadFailureScreen();
+          } else {
+            showSuccessScreenAndRedirect();
+          }
+        }, 3000);
+      });
+    }
+    
+    // 显示成功界面并跳转
+    function showSuccessScreenAndRedirect() {
+      const endScreen = document.getElementById('end-screen');
+      endScreen.style.display = 'block';
+      
+      setTimeout(() => {
+        window.location.href = "https://app.prolific.com/submissions/complete?cc=C1OH8WG7";
+      }, 3000);
     }
   </script>
 </body>
