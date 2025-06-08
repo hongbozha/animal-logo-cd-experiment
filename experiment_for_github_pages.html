@@ -91,6 +91,12 @@
     .tutorial-page.active {
       display: block;
     }
+    .tutorial-image_extra {
+      width: 960px; /* 固定宽度 */
+      border: 2px solid #333;
+      margin: 0 auto; /* 图片水平居中 */
+      display: block; /* 确保 margin 生效 */
+    }
     .tutorial-image {
       width: 960px; /* 固定宽度 */
       border: 0px solid #ddd;
@@ -196,7 +202,7 @@
     <div id="tutorial">
       <!-- 示例页面1 -->
       <div class="tutorial-page active" id="page-1">
-        <img class="tutorial-image" src="Calibration.jpeg" alt="实验流程介绍">
+        <img class="tutorial-image_extra" src="Calibration.jpeg" alt="实验流程介绍">
         <div class="tutorial-text">Welcome! Before we begin the main task, we’d like to provide a brief example to help you understand what to expect.<br>Please follow the on-screen instructions at your own pace.</div>
       </div>
       
@@ -333,11 +339,14 @@
     let currentImg = new Image();
     let startTime = 0;
     let currentPairNumber = 0;
-    let trialAttempts = 0; // 记录当前图片对的尝试次数
+    let displayAttempts = 0; // 记录当前图片对的展示次数
     let currentDisplayPhase = 0; // 0: calibration, 1: first image, 2: gray, 3: second image, 4: gray
     let pairStartTime = 0; // 记录当前图片对的开始时间
     let currentImageType = ''; // 记录当前显示的图片类型
     let currentTimer = null; // 统一管理当前的定时器
+    
+    // 每对图片的最大交替次数
+    const MAX_DISPLAYS = 30;
     
     // 示例引导相关变量
     let currentTutorialPage = 1;
@@ -590,11 +599,18 @@
         return;
       }
     
-      trialAttempts = 0; // 重置尝试次数
+      displayAttempts = 0; // 重置展示次数
       currentPairNumber = current + 1;
       currentDisplayPhase = 0; // 重置显示阶段
       pairStartTime = performance.now(); // 记录当前图片对的开始时间
       
+    // 新增：输出当前pair的图片名称
+    const [imgA, imgB] = imagePairs[current];
+    console.log(`----- 开始处理第 ${currentPairNumber} 对图片 -----`);
+    console.log(`图片A: ${imgA}`);
+    console.log(`图片B: ${imgB}`);
+    console.log('-------------------------');
+
       // 显示校准图片
       showCalibration();
     }
@@ -631,7 +647,7 @@
     
       currentImg.onload = () => {
         ctx.drawImage(currentImg, 0, 0, 960, 720);
-        msg.innerText = `pair${currentPairNumber}-1 (attempt ${trialAttempts+1})`;
+        msg.innerText = `pair${currentPairNumber}-1 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         
         currentImageType = 'first'; // 标记为第一张图片
         canvas.onclick = recordClick; // 绑定点击事件
@@ -648,21 +664,28 @@
     
     // 显示灰色背景
     function showGrayScreen() {
-      canvas.onclick = null; // 灰色背景时不响应点击
+      canvas.onclick = recordClick; // 灰色背景时也响应点击
       ctx.fillStyle = "#d3d3d3"; // 浅灰色背景
       ctx.fillRect(0, 0, canvas.width, canvas.height); // 填充灰色背景
       
       if (currentDisplayPhase === 2) {
-        msg.innerText = `pair${currentPairNumber}-gray between 1 and 2`;
+        msg.innerText = `pair${currentPairNumber}-gray between 1 and 2 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         // 间隔灰屏展示100ms后显示第二张图片
         currentTimer = setTimeout(() => {
           currentDisplayPhase = 3;
           showSecondImage();
         }, 100);
       } else if (currentDisplayPhase === 4) {
-        msg.innerText = `pair${currentPairNumber}-gray between 2 and 1`;
+        msg.innerText = `pair${currentPairNumber}-gray between 2 and 1 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         // 间隔灰屏展示100ms后显示第一张图片
         currentTimer = setTimeout(() => {
+          displayAttempts++; // 每次完整交替后增加展示次数
+          if (displayAttempts >= MAX_DISPLAYS) {
+            // 达到最大展示次数，处理未点击情况
+            handleNoClick();
+            return;
+          }
+          
           currentDisplayPhase = 1;
           showFirstImage();
         }, 100);
@@ -676,7 +699,7 @@
     
       secondImg.onload = () => {
         ctx.drawImage(secondImg, 0, 0, 960, 720);
-        msg.innerText = `pair${currentPairNumber}-2 (attempt ${trialAttempts+1})`;
+        msg.innerText = `pair${currentPairNumber}-2 (display ${displayAttempts+1}/${MAX_DISPLAYS})`;
         
         currentImageType = 'second'; // 标记为第二张图片
         canvas.onclick = recordClick; // 绑定点击事件
@@ -691,6 +714,43 @@
       secondImg.src = imgB;
     }
     
+    // 处理未点击情况
+    function handleNoClick() {
+      console.log(`Pair ${currentPairNumber} reached ${MAX_DISPLAYS} displays without click, proceeding...`);
+      
+      // 生成未点击的数据
+      const payload = {
+        imageData: null,
+        fileName: null,
+        userId,
+        experimentId: current + 1,
+        pairIndex: current + 1,
+        timestamp: new Date().toLocaleString(),
+        clickedX: null,
+        clickedY: null,
+        timeMs: Math.round(performance.now() - pairStartTime),
+        imageA: imagePairs[current][0],
+        imageB: imagePairs[current][1],
+        attempts: displayAttempts,
+        imageType: null,
+        referrer: participantInfo.referrer,
+        queryParams: participantInfo.queryParams
+      };
+
+      // 上传数据
+      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }).catch((err) => {
+        console.warn("Uploading failed (silent)", err);
+      });
+
+      // 进入下一对图片
+      canvas.onclick = null;
+      current++;
+      setTimeout(nextImage, 500);
+    }
+    
     // 记录点击事件
     function recordClick(e) {
       // 清除当前的定时器
@@ -703,12 +763,18 @@
       const x = Math.round(e.clientX - rect.left);
       const y = Math.round(e.clientY - rect.top);
       const elapsed = Math.round(performance.now() - pairStartTime); // 总反应时间
-
-      // 绘制红点
-      ctx.fillStyle = "red";
-      ctx.beginPath();
-      ctx.arc(x, y, 10, 0, Math.PI * 2);
-      ctx.fill();
+      
+      // 判断是否点击在灰色背景上
+      const isGrayBackground = currentDisplayPhase === 2 || currentDisplayPhase === 4;
+      
+      // 如果点击在灰色背景上，不绘制红点
+      if (!isGrayBackground) {
+        // 绘制红点（仅在图片上点击时绘制）
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // 生成文件名和时间戳
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -717,8 +783,8 @@
 
       // 组装数据
       const payload = {
-        imageData: canvas.toDataURL("image/png"),
-        fileName,
+        imageData: isGrayBackground ? null : canvas.toDataURL("image/png"), // 灰色背景不发送图片
+        fileName: isGrayBackground ? null : fileName, // 灰色背景不发送文件名
         userId,
         experimentId: pairIndex,
         pairIndex,
@@ -728,10 +794,11 @@
         timeMs: elapsed,
         imageA: imagePairs[current][0],
         imageB: imagePairs[current][1],
-        attempts: trialAttempts + 1,
-        imageType: currentImageType, // 记录点击的是第一张还是第二张图片
+        attempts: displayAttempts + 1,
+        imageType: currentImageType,
         referrer: participantInfo.referrer,
-        queryParams: participantInfo.queryParams
+        queryParams: participantInfo.queryParams,
+        clickedOnGray: isGrayBackground // 新增字段，标记是否点击在灰色背景上
       };
 
       // 控制台打印和上传
@@ -741,8 +808,9 @@
         图片类型: currentImageType,
         点击坐标: `X: ${x}, Y: ${y}`,
         反应时间: `${elapsed} ms`,
-        尝试次数: payload.attempts,
-        图片对: `${payload.imageA} vs ${payload.imageB}`
+        展示次数: payload.attempts,
+        图片对: `${payload.imageA} vs ${payload.imageB}`,
+        是否点击灰色背景: isGrayBackground
       });
       console.log("-------------------------");
 
