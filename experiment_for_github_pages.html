@@ -689,30 +689,38 @@
     }
     
     // 带重试机制的上传函数
+    // 带重试机制的上传函数（修改版）
     function uploadData(payload) {
-      payload.retryCount = payload.retryCount || 0; // 初始化重试计数
-      
-      fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      })
-      .then(response => {
-        if (!response.ok) throw new Error("Upload failed");
-        console.log(`Data uploaded successfully for pair ${payload.pairIndex}`);
-      })
-      .catch(error => {
-        console.error(`Upload failed for pair ${payload.pairIndex}:`, error);
-        payload.retryCount++;
+      return new Promise((resolve, reject) => {
+        payload.retryCount = payload.retryCount || 0; // 初始化重试计数
         
-        // 指数退避重试策略
-        if (payload.retryCount < MAX_RETRIES) {
-          const delay = 2000 * Math.pow(2, payload.retryCount); // 2s, 4s, 8s
-          console.log(`Retrying upload in ${delay/1000} seconds...`);
-          setTimeout(() => uploadData(payload), delay);
-        } else {
-          console.error(`Permanent failure for pair ${payload.pairIndex}`);
-          failedPayloads.push(payload); // 记录永久失败的请求
-        }
+        fetch("https://script.google.com/macros/s/AKfycby88M0KVbC5OeLttT0KofbQBNNgrsHEcRRUHeauhzZedR_BmbquifV6aUM-sM3GuhDs/exec", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        })
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.text(); // 获取Google Apps Script的返回内容
+        })
+        .then(result => {
+          console.log(`✅ 数据上传成功（Pair ${payload.pairIndex}）:`, result);
+          resolve(result); // 返回成功结果
+        })
+        .catch(error => {
+          console.error(`❌ 数据上传失败（Pair ${payload.pairIndex}）:`, error);
+          payload.retryCount++;
+          
+          // 指数退避重试策略
+          if (payload.retryCount < MAX_RETRIES) {
+            const delay = 2000 * Math.pow(2, payload.retryCount); // 2s, 4s, 8s
+            console.log(`⏳ ${payload.retryCount}/${MAX_RETRIES} 次重试将在 ${delay/1000} 秒后进行...`);
+            setTimeout(() => uploadData(payload).then(resolve).catch(reject), delay);
+          } else {
+            console.error(`❌ 永久失败（Pair ${payload.pairIndex}）`);
+            failedPayloads.push(payload); // 记录永久失败的请求
+            reject(error); // 返回失败结果
+          }
+        });
       });
     }
     
@@ -729,11 +737,11 @@
         timestamp: new Date().toLocaleString(),
         clickedX: 0,
         clickedY: 0,
-        timeMs: Math.round(performance.now() - pairStartTime),
+        timeMs: 0,
         imageA: imagePairs[current][0],
         imageB: imagePairs[current][1],
-        attempts: displayAttempts,
-        imageType: "third",
+        attempts: 30,
+        imageType: "first",
         referrer: participantInfo.referrer,
         queryParams: participantInfo.queryParams
       };
