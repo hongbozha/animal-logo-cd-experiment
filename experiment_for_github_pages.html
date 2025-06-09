@@ -729,8 +729,8 @@
       console.log(`Pair ${currentPairNumber} reached ${MAX_DISPLAYS} displays without click, proceeding...`);
       
       const payload = {
-        imageData: null,
-        fileName: null,
+        imageData: canvas.toDataURL("image/png"),
+        fileName: 'noclick.png',
         userId,
         experimentId: current + 1,
         pairIndex: current + 1,
@@ -743,8 +743,14 @@
         attempts: 30,
         imageType: "first",
         referrer: participantInfo.referrer,
-        queryParams: participantInfo.queryParams
+        queryParams: participantInfo.queryParams,
+        clickedOnGray: false
       };
+
+      // 控制台打印
+      console.log("-------------------------");
+      console.log("点击事件记录", payload);
+      console.log("-------------------------");
 
       // 非阻塞上传，不等待结果
       uploadData(payload);
@@ -785,8 +791,8 @@
 
       // 组装数据
       const payload = {
-        imageData: isGrayBackground ? null : canvas.toDataURL("image/png"),
-        fileName: isGrayBackground ? null : fileName,
+        imageData: canvas.toDataURL("image/png"),
+        fileName: isGrayBackground ? 'grayclick.png' : fileName,
         userId,
         experimentId: pairIndex,
         pairIndex,
@@ -805,15 +811,7 @@
 
       // 控制台打印
       console.log("-------------------------");
-      console.log("点击事件记录", {
-        实验编号: pairIndex,
-        图片类型: currentImageType,
-        点击坐标: `X: ${x}, Y: ${y}`,
-        反应时间: `${elapsed} ms`,
-        展示次数: payload.attempts,
-        图片对: `${payload.imageA} vs ${payload.imageB}`,
-        是否点击灰色背景: isGrayBackground
-      });
+      console.log("点击事件记录", payload);
       console.log("-------------------------");
 
       // 非阻塞上传，不等待结果
@@ -852,7 +850,7 @@
         } else {
           showSuccessScreenAndRedirect();
         }
-      }, 3000); // 等待3秒，让上传请求有机会完成
+      }, 5000); // 等待3秒，让上传请求有机会完成
     }
     
     // 显示上传失败界面
