@@ -416,7 +416,7 @@
           pairs.push([`${folder}/${otherImage}`, `${folder}/${baseImage}`]);
         }
     
-        return getRandomItems(pairs, 10);
+        return getRandomItems(pairs, 12);
       }
     
       // 从数组中随机抽取 count 个元素
@@ -895,10 +895,26 @@
     function showSuccessScreenAndRedirect() {
       const endScreen = document.getElementById('end-screen');
       endScreen.style.display = 'block';
+
+      const currentCond = queryParams.condition || "st_anth_list_a";
+
+      const redirectMap = {
+        "st_anth_list_a": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 A 的链接
+        "st_anth_list_b": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 B 的链接
+        "st_nonanth_list_a": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 A 的链接
+        "st_nonanth_list_b": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 B 的链接
+        "default": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7" // 兜底链接
+      };
+
+      const targetUrl = redirectMap[currentCond] || redirectMap["default"];
       
+      // setTimeout(() => {
+      //   window.location.href = "https://wbs.qualtrics.com/jfe/form/SV_1BsNjBsU3BeTNeC";
+      // }, 3000);
+
       setTimeout(() => {
-        window.location.href = "https://wbs.qualtrics.com/jfe/form/SV_1BsNjBsU3BeTNeC";
-      }, 3000);
+        window.location.href = targetUrl;
+      }, 3000); 
     }
   </script>
 </body>
