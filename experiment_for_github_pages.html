@@ -376,12 +376,16 @@
     const retryBtn = document.getElementById('retry-btn');
     
     async function preloadImages() {
-      const categories = ["st"];
+      // const categories = ["st"];
+      
+      // 从 URL 获取 group 参数 (例如 ?group=2)，如果没有则默认加载 group1
+      const selected_condition = queryParams.condition || "st_anth_list_a";
+      const categories = [selected_condition];
       const selectedPairs = [];
-    
       // 逐类加载
       async function loadCategory(folder) {
-        const res = await fetch(`img_${folder}/image_list.json`);
+        // const res = await fetch(`img_${folder}/image_list.json`);
+        const res = await fetch(`${folder}/image_list.json`);
         const files = await res.json();
     
         // 按 prefix 分组
@@ -408,7 +412,8 @@
           
           const others = group.filter(f => f !== baseImage);
           const otherImage = others[Math.floor(Math.random() * others.length)];
-          pairs.push([`img_${folder}/${otherImage}`, `img_${folder}/${baseImage}`]);
+          // pairs.push([`img_${folder}/${otherImage}`, `img_${folder}/${baseImage}`]);
+          pairs.push([`${folder}/${otherImage}`, `${folder}/${baseImage}`]);
         }
     
         return getRandomItems(pairs, 10);
@@ -787,7 +792,8 @@
       // 生成文件名和时间戳
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const pairIndex = current + 1;
-      const fileName = `${userId}_pair${pairIndex}_${timestamp}_${currentImageType}.png`;
+      const currentCond = queryParams.condition || "default";
+      const fileName = `${userId}_${currentCond}_pair${pairIndex}_${timestamp}_${currentImageType}.png`;
 
       // 组装数据
       const payload = {
