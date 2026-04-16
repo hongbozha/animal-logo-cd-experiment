@@ -379,7 +379,7 @@
       // const categories = ["st"];
       
       // 从 URL 获取 group 参数 (例如 ?group=2)，如果没有则默认加载 group1
-      const selected_condition = queryParams.condition || "st_anth_list_a";
+      const selected_condition = queryParams.condition || "ec_low_list_a";
       const categories = [selected_condition];
       const selectedPairs = [];
       // 逐类加载
@@ -896,13 +896,11 @@
       const endScreen = document.getElementById('end-screen');
       endScreen.style.display = 'block';
 
-      const currentCond = queryParams.condition || "st_anth_list_a";
+      const currentCond = queryParams.condition || "ec_low_list_a";
 
       const redirectMap = {
-        "st_anth_list_a": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 A 的链接
-        "st_anth_list_b": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 B 的链接
-        "st_nonanth_list_a": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 A 的链接
-        "st_nonanth_list_b": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 B 的链接
+        "ec_low_list_a": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 A 的链接
+        "ec_low_list_b": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7", // 替换为 B 的链接
         "default": "https://app.prolific.com/submissions/complete?cc=C1OH8WG7" // 兜底链接
       };
 
